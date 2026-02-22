@@ -465,7 +465,7 @@
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
             
-            // BANNER DİNLEYİCİSİ (Strict Filter)
+            // BANNER DİNLEYİCİSİ (Sadece Liste Günceller, UI Render Etmez - Loop Engelleme)
             db.collection("banners").orderBy("date", "desc").onSnapshot(snap => {
                 activeBanners = [];
                 let adminHtml = "";
@@ -480,10 +480,9 @@
                     }
                 });
                 const el = document.getElementById('banner-list'); if(el) el.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Aktif banner yok</div>";
-                refreshAllBanners();
             });
 
-            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ (Strict Filter)
+            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
                 rewardedAds = [];
                 let adminHtml = "";
@@ -521,6 +520,9 @@
             if(catGrid) catGrid.innerHTML = cats.map((c, i) => `<div style="background:var(--bg-card); padding:14px; border-radius:18px; border:0.5px solid var(--border); text-align:center; font-size:13px; animation: fadeInUp 0.5s forwards; animation-delay: ${i*0.05}s; opacity:0;" onclick="filter('${c}')">${c}</div>`).join('');
             const sbList = document.getElementById('sb-list');
             if(sbList) sbList.innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
+            
+            // Sayfa yüklendiğinde bannerları bir kere yükle
+            setTimeout(refreshAllBanners, 2000);
         }
 
         // --- BANNER SİSTEMİ ---
@@ -537,8 +539,20 @@
                 return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no"></iframe>`;
             }
         }
-        function incrementBannerView(bid) { db.collection("banners").doc(bid).update({ views: firebase.firestore.FieldValue.increment(1) }); }
-        function refreshAllBanners() { document.querySelectorAll('.dynamic-banner').forEach(el => { el.innerHTML = getBannerHTML(); }); }
+        
+        // KESİN SAYAÇ FONKSİYONU
+        function incrementBannerView(bid) { 
+            if(!bid) return;
+            db.collection("banners").doc(bid).update({ 
+                views: firebase.firestore.FieldValue.increment(1) 
+            }).catch(err => console.log("Banner err:", err)); 
+        }
+
+        // Sadece sayfa değiştiğinde çağırılır (Loop engellemek için)
+        function refreshAllBanners() { 
+            document.querySelectorAll('.dynamic-banner').forEach(el => { el.innerHTML = getBannerHTML(); }); 
+        }
+
         function addBanner() {
             let img = document.getElementById('ban-img').value; 
             let link = document.getElementById('ban-link').value;
@@ -566,31 +580,29 @@
 
         function showCustomAd() {
             if(rewardedAds.length === 0) return;
-            // Rastgele reklam seç (Aktif listeden)
             const rand = Math.floor(Math.random() * rewardedAds.length);
             currentRewardedAd = rewardedAds[rand];
             
-            // Görüntülenme artır
-            db.collection("rewarded_ads").doc(currentRewardedAd.id).update({ views: firebase.firestore.FieldValue.increment(1) });
+            // Görüntülenme artır (Kesin Sayaç)
+            db.collection("rewarded_ads").doc(currentRewardedAd.id).update({ 
+                views: firebase.firestore.FieldValue.increment(1) 
+            });
 
-            // UI Doldur
             document.getElementById('ad-sponsor-txt').innerText = `Sponsor: ${currentRewardedAd.sponsor || 'BatiDaoDeneme'}`;
             document.getElementById('ad-player-img').src = currentRewardedAd.img;
             document.getElementById('ad-player-title').innerText = currentRewardedAd.title;
             const btn = document.getElementById('ad-player-btn');
             btn.innerText = currentRewardedAd.btnText || 'İncele';
             
-            // Player'ı aç
             const player = document.getElementById('custom-ad-player');
             player.classList.add('active');
             
-            // Sayacı Başlat (15sn)
             let timeLeft = 15;
             const timerEl = document.getElementById('ad-timer');
             const closeBtn = document.getElementById('ad-close');
             
             timerEl.style.display = 'flex';
-            closeBtn.style.display = 'none'; // X gizle
+            closeBtn.style.display = 'none'; 
             timerEl.innerText = timeLeft;
             
             if(adInterval) clearInterval(adInterval);
@@ -599,15 +611,17 @@
                 timerEl.innerText = timeLeft;
                 if(timeLeft <= 0) {
                     clearInterval(adInterval);
-                    timerEl.style.display = 'none'; // Sayacı gizle
-                    closeBtn.style.display = 'flex'; // X göster
+                    timerEl.style.display = 'none'; 
+                    closeBtn.style.display = 'flex'; 
                 }
             }, 1000);
         }
 
         function clickCustomAd() {
             if(currentRewardedAd && currentRewardedAd.link) {
-                db.collection("rewarded_ads").doc(currentRewardedAd.id).update({ clicks: firebase.firestore.FieldValue.increment(1) });
+                db.collection("rewarded_ads").doc(currentRewardedAd.id).update({ 
+                    clicks: firebase.firestore.FieldValue.increment(1) 
+                });
                 window.open(currentRewardedAd.link, '_blank');
             }
         }
@@ -616,24 +630,19 @@
             document.getElementById('custom-ad-player').classList.remove('active');
             clearInterval(adInterval);
             
-            // Ödülü ver
             db.collection("users").doc(String(user.id)).update({ balance: firebase.firestore.FieldValue.increment(1) })
             .then(() => {
                 remainingAdsToWatch--;
                 showToast(`✅ +1 Jeton!`);
-                
                 if(remainingAdsToWatch > 0) {
-                    setTimeout(() => {
-                        showToast(`${remainingAdsToWatch} reklam kaldı...`);
-                        showCustomAd();
-                    }, 1000);
+                    setTimeout(() => { showToast(`${remainingAdsToWatch} reklam kaldı...`); showCustomAd(); }, 1000);
                 } else {
                     showToast("Tüm reklamlar izlendi.");
                 }
             });
         }
 
-        // --- ADMIN: ÖDÜLLÜ REKLAM YÖNETİMİ ---
+        // --- ADMIN ---
         function saveRewardedAd() {
             let s = document.getElementById('rad-sponsor').value;
             let i = document.getElementById('rad-img').value;
@@ -649,27 +658,13 @@
             
             db.collection("rewarded_ads").add({
                 sponsor: s || 'Sponsorlu',
-                img: i,
-                title: t,
-                btnText: b || 'Tıkla',
-                link: l,
-                limit: lim,
-                views: 0,
-                clicks: 0,
-                date: Date.now()
-            }).then(() => {
-                showToast("Reklam Eklendi");
-                closeM();
-            });
+                img: i, title: t, btnText: b || 'Tıkla', link: l, limit: lim,
+                views: 0, clicks: 0, date: Date.now()
+            }).then(() => { showToast("Reklam Eklendi"); closeM(); });
         }
 
-        function deleteRewardedAd(id) {
-            if(confirm("Bu reklamı silmek istiyor musun?")) {
-                db.collection("rewarded_ads").doc(id).delete().then(()=>showToast("Silindi"));
-            }
-        }
+        function deleteRewardedAd(id) { if(confirm("Silinsin mi?")) db.collection("rewarded_ads").doc(id).delete().then(()=>showToast("Silindi")); }
 
-        // --- PDF VE DİĞERLERİ ---
         function openLink(url) { window.open(url, '_blank'); showToast("Yönlendiriliyor..."); }
         function unlockPdf(k) {
             selPdf = pdfs.find(p => p.k === k);
@@ -716,7 +711,12 @@
         }
 
         function updateBalanceUI() { document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = balance); }
-        function go(v, el) { document.querySelectorAll('.view').forEach(x => x.classList.remove('active')); document.getElementById('v-'+v).classList.add('active'); if(el) { document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); el.classList.add('active'); } refreshAllBanners(); }
+        function go(v, el) { 
+            document.querySelectorAll('.view').forEach(x => x.classList.remove('active')); 
+            document.getElementById('v-'+v).classList.add('active'); 
+            if(el) { document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); el.classList.add('active'); } 
+            refreshAllBanners(); 
+        }
         function toggleSidebar(o) { const sb = document.getElementById('sidebar'); const ov = document.getElementById('sb-overlay'); if(o) { ov.style.display='block'; setTimeout(()=>ov.style.opacity='1',10); sb.style.left='0'; } else { ov.style.opacity='0'; setTimeout(()=>ov.style.display='none',300); sb.style.left='-280px'; } }
         function openModal(i) { document.getElementById(i).style.display='flex'; setTimeout(()=>document.getElementById(i).classList.add('active'),10); }
         function closeM() { document.querySelectorAll('.modal-overlay').forEach(x => { x.classList.remove('active'); setTimeout(()=>x.style.display='none',300); }); }
