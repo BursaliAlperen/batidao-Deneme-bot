@@ -14,6 +14,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
+    <!-- CHART.JS (GRAFİKLER İÇİN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- ASSETS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -125,7 +128,6 @@
             overflow: hidden; 
             position: relative;
         }
-        /* iframe reset */
         iframe { border:none; }
 
         /* CARDS & UI */
@@ -182,6 +184,15 @@
         .admin-item img { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; margin-right: 10px; }
         .section-title { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 15px 0 5px 5px; text-align: left; }
 
+        /* CHART KUTUSU */
+        .chart-box {
+            background: var(--bg-card);
+            border: 0.5px solid var(--border);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
         /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-box { background: var(--bg-card); width: 88%; max-width: 350px; border-radius: 28px; padding: 25px; text-align: center; border: 0.5px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; transform: scale(0.9); transition: 0.3s var(--ease-spring); }
@@ -189,7 +200,7 @@
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; z-index: 5000; border: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 
-        /* CUSTOM AD PLAYER (Tam Ekran - Earn Bölümü İçin) */
+        /* CUSTOM AD PLAYER */
         #custom-ad-player {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 6000; display: none; flex-direction: column;
@@ -217,7 +228,7 @@
         </div>
     </div>
 
-    <!-- CUSTOM AD PLAYER (Manuel Ödüllü Reklam İçin) -->
+    <!-- CUSTOM AD PLAYER -->
     <div id="custom-ad-player">
         <div class="ad-header">
             <div id="ad-sponsor-txt">Sponsorlu</div>
@@ -327,10 +338,22 @@
             </div>
         </div>
 
-        <!-- 5. ADMIN (Banner Yönetimi Kaldırıldı) -->
+        <!-- 5. ADMIN -->
         <div id="v-admin" class="view">
             <div class="scroll-content">
                 <h2 style="margin-bottom:20px; font-weight:700;">Panel</h2>
+                
+                <!-- İSTATİSTİK GRAFİKLERİ -->
+                <h4 class="section-title">ÜYE AKTİVİTESİ (Son 7 Gün)</h4>
+                <div class="chart-box">
+                    <canvas id="userChart" width="400" height="200"></canvas>
+                </div>
+
+                <h4 class="section-title">REKLAM PERFORMANSI</h4>
+                <div class="chart-box">
+                    <canvas id="adChart" width="400" height="200"></canvas>
+                </div>
+
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                     <div class="card" style="padding:15px; text-align:center; margin:0;"><div style="font-size:24px; font-weight:700;" id="st-users">0</div><div style="font-size:10px; color:var(--text-sub);">KULLANICI</div></div>
                     <div class="card" style="padding:15px; text-align:center; margin:0;"><div style="font-size:24px; font-weight:700;" id="st-pdfs">0</div><div style="font-size:10px; color:var(--text-sub);">KİTAP</div></div>
@@ -338,7 +361,6 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                     <div class="btn btn-sec" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus"></i> Ekle</div>
                     <div class="btn btn-sec" onclick="openPdfList()"><i class="fa-solid fa-list"></i> Kitaplar</div>
-                    <!-- Banner butonu kaldırıldı -->
                     <div class="btn btn-sec" onclick="openModal('m-add-rewarded')"><i class="fa-solid fa-video"></i> Ödüllü</div>
                     <div class="btn btn-sec" onclick="openModal('m-users')"><i class="fa-solid fa-users"></i> Üyeler</div>
                     <div class="btn btn-sec" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn"></i> Duyuru</div>
@@ -361,9 +383,7 @@
             </div>
         </div>
 
-        <!-- (Banner Modalı Kaldırıldı) -->
-
-        <!-- ÖDÜLLÜ REKLAM EKLEME MODALI (MANUEL EKLEME İÇİN DEVAM EDİYOR) -->
+        <!-- ÖDÜLLÜ REKLAM EKLEME MODALI -->
         <div id="m-add-rewarded" class="modal-overlay">
             <div class="modal-box">
                 <h3>Ödüllü Reklam Ekle</h3>
@@ -431,6 +451,10 @@
         let remainingAdsToWatch = 0;
         let searchTimeout = null; 
 
+        // GRAFİK DEĞİŞKENLERİ
+        let userChartInstance = null;
+        let adChartInstance = null;
+
         if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
 
         function toggleTheme() {
@@ -473,7 +497,7 @@
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
             
-            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ (DEVAM EDİYOR)
+            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
                 rewardedAds = [];
                 let activeHtml = "";
@@ -526,7 +550,6 @@
             setTimeout(refreshAllBanners, 2000);
         }
 
-        // --- IMGUR LİNK DÜZELTİCİ ---
         function fixImgurLink(url) {
             if (!url) return "";
             if (url.includes("imgur.com")) {
@@ -537,11 +560,7 @@
             return url;
         }
 
-        // --- BANNER FONKSİYONU (MONDIAD İÇİN HAZIR) ---
         function getBannerHTML() {
-            // BURAYA GELECEK OLAN MONDIAD BANNER KODU EKLENECEK
-            // Kod verildiğinde aşağıdaki return kısmına yapıştırılacak.
-            // Şimdilik boş dönüyor.
             return `<!-- 3. MONDIAD BANNER KODU BURAYA EKLENECEK -->
                     <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-sub); font-size:12px;">
                         <!-- Reklam Alanı -->
@@ -552,7 +571,6 @@
             document.querySelectorAll('.dynamic-banner').forEach(el => { el.innerHTML = getBannerHTML(); }); 
         }
 
-        // --- GECİKMELİ ARAMA ---
         function delayedSearch() {
             if(searchTimeout) clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
@@ -560,7 +578,6 @@
             }, 500); 
         }
 
-        // --- ÖDÜLLÜ REKLAM SİSTEMİ ---
         function watchRewardedAd() {
             let count = parseInt(document.getElementById('ad-loop-count').value);
             if(count < 1) return;
@@ -719,9 +736,102 @@
         function showToast(m, t='s') { const d=document.createElement('div'); d.className='toast'; d.innerHTML = (t==='error'?'<i class="fa-solid fa-triangle-exclamation" style="color:#FF3B30"></i> ':'<i class="fa-solid fa-check-circle" style="color:#34C759"></i> ') + m; document.getElementById('toast-container').appendChild(d); setTimeout(()=>d.remove(),3000); }
         
         function loadStats() {
-            db.collection("users").get().then(s => { safeSetText('st-users', s.size); let list = ""; s.docs.slice(0,50).forEach(d => { let u = d.data(); list += `<div class="admin-item"><div><b>${u.name}</b></div><div style="color:var(--text-sub)">${new Date(u.last).toLocaleDateString()}</div></div>`; }); document.getElementById('recent-users-list').innerHTML = list || "<div style='padding:10px;text-align:center;'>Veri yok</div>"; document.getElementById('adm-user-list').innerHTML = list; });
+            // Kullanıcıları Getir ve Grafiğe Dök
+            db.collection("users").get().then(s => { 
+                safeSetText('st-users', s.size); 
+                let list = ""; 
+                
+                // Grafik Verileri için Dizi Hazırlığı (Son 7 Gün)
+                let days = [], counts = [0,0,0,0,0,0,0];
+                for(let i=6; i>=0; i--) {
+                    let d = new Date(); d.setDate(d.getDate() - i);
+                    days.push(d.toLocaleDateString('tr-TR', {day: 'numeric', month: 'short'}));
+                }
+
+                s.docs.forEach(d => { 
+                    let u = d.data(); 
+                    list += `<div class="admin-item"><div><b>${u.name}</b></div><div style="color:var(--text-sub)">${new Date(u.last).toLocaleDateString()}</div></div>`; 
+                    
+                    // Son 7 gün kontrolü
+                    let diffTime = Math.abs(Date.now() - u.last);
+                    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    if(diffDays <= 7) {
+                        counts[7-diffDays]++;
+                    }
+                }); 
+                document.getElementById('recent-users-list').innerHTML = list || "<div style='padding:10px;text-align:center;'>Veri yok</div>"; 
+                document.getElementById('adm-user-list').innerHTML = list;
+
+                renderCharts(days, counts);
+            });
+
             db.collection("requests").get().then(s => { let list = ""; s.docs.forEach(d => { list += `<div class="admin-item"><div>${d.data().book}</div><button class="btn btn-danger" style="width:24px;height:24px;padding:0;font-size:10px;" onclick="delReq('${d.id}')">X</button></div>`; }); document.getElementById('adm-req-list').innerHTML = list || "<div style='padding:10px'>İstek yok</div>"; });
         }
+
+        // GRAFİKLERİ ÇİZEN FONKSİYON
+        function renderCharts(days, userCounts) {
+            // Önce varsa eski grafikleri yok et (Hata önlemek için)
+            if(userChartInstance) userChartInstance.destroy();
+            if(adChartInstance) adChartInstance.destroy();
+
+            // 1. ÜYE GRAFİĞİ (Çizgi)
+            const ctxUser = document.getElementById('userChart').getContext('2d');
+            userChartInstance = new Chart(ctxUser, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Aktif Kullanıcı',
+                        data: userCounts,
+                        borderColor: '#0A84FF',
+                        backgroundColor: 'rgba(10, 132, 255, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4, // Kavisli çizgi
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0A84FF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8E8E93' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8E8E93', stepSize: 1 } }
+                    }
+                }
+            });
+
+            // 2. REKLAM GRAFİĞİ (Bar) - Sadece Ödüllü Reklamlar
+            let adLabels = [], adViews = [];
+            rewardedAds.forEach(r => {
+                adLabels.push(r.sponsor.substring(0, 10)); // İsim çok uzunsa kısalt
+                adViews.push(r.views || 0);
+            });
+
+            const ctxAd = document.getElementById('adChart').getContext('2d');
+            adChartInstance = new Chart(ctxAd, {
+                type: 'bar',
+                data: {
+                    labels: adLabels.length ? adLabels : ['Veri Yok'],
+                    datasets: [{
+                        label: 'İzlenme',
+                        data: adViews.length ? adViews : [0],
+                        backgroundColor: '#FFD60A',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8E8E93' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8E8E93' } }
+                    }
+                }
+            });
+        }
+
         function savePdf() { const d = { link: document.getElementById('ap-l').value, name: document.getElementById('ap-n').value, img: document.getElementById('ap-img').value, cat: document.getElementById('ap-c').value, cost: 5, date: Date.now() }; if(d.link) { db.collection("pdfs").add(d).then(()=>showToast("Eklendi")); closeM(); } }
         function sendReq() { let v=document.getElementById('req-txt').value; if(v) db.collection("requests").add({book:v, user:user.first_name}).then(()=>showToast("Gitti")); closeM(); }
         function sendNotification() { let v=document.getElementById('notif-txt').value; if(v) db.collection("notifications").add({text:v, date:Date.now()}); closeM(); }
