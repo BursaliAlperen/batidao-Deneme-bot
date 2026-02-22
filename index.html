@@ -100,19 +100,36 @@
         }
         .header-btn:active { transform: scale(0.9); }
 
-        /* BANNER */
+        /* BANNER (DÜZELTİLDİ: 728x90) */
         .ad-slot {
-            width: 100%; min-height: 90px; background: var(--bg-surface);
-            border-radius: 18px; margin: 15px 0; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; border: 0.5px solid var(--border); position: relative;
+            width: 100%;
+            height: auto; 
+            min-height: 50px; /* Mobilde çok küçülmesin */
+            background: transparent;
+            margin: 15px 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            overflow: hidden; 
+            position: relative;
         }
-        .ad-slot:empty::before {
-            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transform: translateX(-100%); animation: shimmer 1.5s infinite; z-index: 1;
+        
+        /* 728x90 Banner Stili (Responsive) */
+        .banner-img { 
+            /* İstenilen boyut 728x90 */
+            width: 728px;
+            height: 90px;
+            
+            /* Responsive ayarları: Ekran küçükse orantılı küçült */
+            max-width: 100%; 
+            height: auto; 
+            aspect-ratio: 728 / 90; 
+            
+            object-fit: fill; 
+            display: block; 
+            border-radius: 8px;
         }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .banner-img { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
+        
         iframe { width: 100% !important; height: 100% !important; border:none; }
 
         /* CARDS & UI */
@@ -259,7 +276,8 @@
                 <h2 style="font-weight:700; font-size:26px; margin-bottom:10px;" id="lib-title">Kitaplar</h2>
                 <div style="position:relative;">
                     <i class="fa-solid fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-sub);"></i>
-                    <input class="inp" style="padding-left:45px; margin:0;" placeholder="Ara..." id="search" oninput="renderPdfs('all')">
+                    <!-- oninput güncellendi: Gecikmeli Arama -->
+                    <input class="inp" style="padding-left:45px; margin:0;" placeholder="Ara..." id="search" oninput="delayedSearch()">
                 </div>
             </div>
             <div class="scroll-content">
@@ -434,6 +452,7 @@
         let currentRewardedAd = null;
         let adInterval = null;
         let remainingAdsToWatch = 0;
+        let searchTimeout = null; // Arama Gecikmesi İçin
 
         if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
 
@@ -477,7 +496,7 @@
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
             
-            // BANNER DİNLEYİCİSİ (ARŞİV SİSTEMİ EKLENDİ)
+            // BANNER DİNLEYİCİSİ
             db.collection("banners").orderBy("date", "desc").onSnapshot(snap => {
                 activeBanners = [];
                 let activeHtml = "";
@@ -505,7 +524,7 @@
                 if(elArch) elArch.innerHTML = archiveHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Arşiv boş</div>";
             });
 
-            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ (ARŞİV SİSTEMİ EKLENDİ)
+            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
                 rewardedAds = [];
                 let activeHtml = "";
@@ -555,7 +574,6 @@
             const sbList = document.getElementById('sb-list');
             if(sbList) sbList.innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
             
-            // Sayfa yüklendiğinde bannerları bir kere yükle
             setTimeout(refreshAllBanners, 2000);
         }
 
@@ -570,26 +588,23 @@
             return url;
         }
 
-        // --- BANNER SİSTEMİ ---
+        // --- BANNER SİSTEMİ (DÜZELTİLDİ: SADECE YÜKLENİNCE SAYAR) ---
         function getBannerHTML() {
             if (activeBanners.length > 0) {
                 const rand = Math.floor(Math.random() * activeBanners.length);
                 const b = activeBanners[rand];
                 
-                // Sayaç Artırma (Garantili)
-                incrementBannerView(b.id);
-
+                // NOT: onload tetiklendiğinde sayacı artırır.
+                // Saniyeye göre değil, resim her ekrana geldiğinde 1 kere sayar.
                 return `<a href="${b.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;">
-                            <img src="${b.img}" class="banner-img">
+                            <img src="${b.img}" class="banner-img" onload="incrementBannerView('${b.id}')">
                         </a>`;
             } else {
-                // AADS REKLAM
-                return `<!-- BEGIN AADS AD UNIT 2428387 -->
+                return `<!-- AADS -->
                         <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 10;">
                           <iframe data-aa='2428387' src='//acceptable.a-ads.com/2428387/?size=Adaptive'
                                             style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
-                        </div>
-                        <!-- END AADS AD UNIT 2428387 -->`;
+                        </div>`;
             }
         }
         
@@ -603,7 +618,6 @@
         }
 
         function addBanner() {
-            // Imgur linkini otomatik düzelt
             let img = fixImgurLink(document.getElementById('ban-img').value); 
             let link = document.getElementById('ban-link').value;
             let limit = parseInt(document.getElementById('ban-limit').value);
@@ -613,6 +627,14 @@
             db.collection("banners").add({ img: img, link: link, limit: limit, views: 0, date: Date.now() }).then(() => { showToast("Eklendi"); closeM(); });
         }
         function deleteBanner(id) { if(confirm("Silinsin mi?")) db.collection("banners").doc(id).delete(); }
+
+        // --- GECİKMELİ ARAMA (GEREKSİZ GÖRÜNTÜLENMEYİ ÖNLER) ---
+        function delayedSearch() {
+            if(searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderPdfs('all');
+            }, 500); // 500ms bekle (yazmayı bitirince ara)
+        }
 
         // --- ÖDÜLLÜ REKLAM SİSTEMİ ---
         function watchRewardedAd() {
@@ -696,7 +718,6 @@
         // --- ADMIN ---
         function saveRewardedAd() {
             let s = document.getElementById('rad-sponsor').value;
-            // Imgur linkini otomatik düzelt
             let i = fixImgurLink(document.getElementById('rad-img').value);
             let t = document.getElementById('rad-title').value;
             let b = document.getElementById('rad-btn').value;
