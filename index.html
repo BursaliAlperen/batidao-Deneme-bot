@@ -101,23 +101,25 @@
         }
         .header-btn:active { transform: scale(0.9); }
 
-        /* BANNER (Skeleton & Smooth Load) */
+        /* BANNER (INSTANT LOAD FIX) */
         .ad-slot {
             width: 100%; min-height: 90px; background: var(--bg-surface);
             border-radius: 18px; margin: 15px 0; display: flex; align-items: center; justify-content: center;
             overflow: hidden; border: 0.5px solid var(--border); position: relative;
-            transition: height 0.3s;
         }
-        .ad-slot.loading::before {
+        /* Hızlandırma için shimmer efektini sadece içerik yokken göster */
+        .ad-slot:empty::before {
             content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
             transform: translateX(-100%); animation: shimmer 1.5s infinite; z-index: 1;
         }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         
-        /* İframe ve Resim optimizasyonu: 0.8s yerine 0.3s */
-        iframe, .banner-img { width: 100% !important; height: 90px !important; border: none; opacity: 0; transition: opacity 0.3s ease; z-index: 2; object-fit: cover; }
-        iframe.loaded, .banner-img.loaded { opacity: 1; }
+        /* ÖNEMLİ: Opacity transition kaldırıldı, anında görünmesi için */
+        iframe, .banner-img { 
+            width: 100% !important; height: 90px !important; border: none; 
+            opacity: 1 !important; z-index: 2; object-fit: cover; display: block;
+        }
 
         /* CARDS & UI */
         .card {
@@ -212,7 +214,7 @@
         <!-- 1. HOME -->
         <div id="v-home" class="view active">
             <div class="scroll-content">
-                <div class="ad-slot dynamic-banner loading"></div>
+                <div class="ad-slot dynamic-banner"></div>
 
                 <div class="card" style="background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));">
                     <h2 style="font-size:24px; font-weight:700; margin-bottom:5px;">Merhaba 👋</h2>
@@ -226,7 +228,7 @@
                 <div style="font-weight:700; margin-bottom:12px; font-size:17px;">Kategoriler</div>
                 <div id="home-cat-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
 
-                <div class="ad-slot dynamic-banner loading"></div>
+                <div class="ad-slot dynamic-banner"></div>
             </div>
         </div>
 
@@ -240,7 +242,7 @@
                 </div>
             </div>
             <div class="scroll-content">
-                <div class="ad-slot dynamic-banner loading" style="margin-top:0;"></div>
+                <div class="ad-slot dynamic-banner" style="margin-top:0;"></div>
                 <div id="pdf-list" class="pdf-grid"></div>
                 <div style="height:20px;"></div>
             </div>
@@ -265,7 +267,7 @@
                         <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">İzlemeye Başla</button>
                     </div>
                 </div>
-                <div class="ad-slot dynamic-banner loading"></div>
+                <div class="ad-slot dynamic-banner"></div>
             </div>
         </div>
 
@@ -287,7 +289,7 @@
                         <i class="fa-solid fa-bell" style="width:30px; color:var(--accent);"></i><div style="flex:1;">Duyurular</div><i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                     </div>
                 </div>
-                <div class="ad-slot dynamic-banner loading"></div>
+                <div class="ad-slot dynamic-banner"></div>
             </div>
         </div>
 
@@ -301,6 +303,7 @@
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                     <div class="btn btn-sec" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus"></i> Ekle</div>
+                    <div class="btn btn-sec" onclick="openPdfList()"><i class="fa-solid fa-list"></i> Kitaplar</div> <!-- PDF Silme Butonu -->
                     <div class="btn btn-sec" onclick="openModal('m-banner')"><i class="fa-solid fa-image"></i> Banner</div>
                     <div class="btn btn-sec" onclick="openModal('m-users')"><i class="fa-solid fa-users"></i> Üyeler</div>
                     <div class="btn btn-sec" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn"></i> Duyuru</div>
@@ -316,14 +319,14 @@
                 <div style="width:60px; height:60px; background:rgba(255, 159, 10, 0.1); border-radius:50%; color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:24px;"><i class="fa-solid fa-lock-open"></i></div>
                 <h3 style="margin-bottom:8px;">Kilidi Aç</h3>
                 <p id="unlock-msg" style="color:var(--text-sub); font-size:14px; margin-bottom:20px;"></p>
-                <div class="ad-slot dynamic-banner loading" style="min-height:70px;"></div>
+                <div class="ad-slot dynamic-banner" style="min-height:70px;"></div>
                 <button class="btn btn-coin" id="btn-unlock-pdf">Onayla</button>
                 <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Vazgeç</button>
-                <div class="ad-slot dynamic-banner loading" style="min-height:70px; margin-top:15px;"></div>
+                <div class="ad-slot dynamic-banner" style="min-height:70px; margin-top:15px;"></div>
             </div>
         </div>
 
-        <!-- YENİ BANNER MODALI -->
+        <!-- BANNER MODALI -->
         <div id="m-banner" class="modal-overlay">
             <div class="modal-box">
                 <h3>Banner Yönetimi</h3>
@@ -339,7 +342,19 @@
             </div>
         </div>
 
-        <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner loading"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <!-- PDF LISTE MODALI (YENİ) -->
+        <div id="m-list-pdfs" class="modal-overlay">
+            <div class="modal-box">
+                <h3>Tüm Kitaplar</h3>
+                <div style="position:relative; margin-bottom:10px;">
+                    <input class="inp" id="adm-pdf-search" oninput="openPdfList()" placeholder="Kitap Ara..." style="margin:0;">
+                </div>
+                <div id="pdf-admin-list" class="admin-scroll" style="max-height:300px;"></div>
+                <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button>
+            </div>
+        </div>
+
+        <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-pdf" class="modal-overlay"><div class="modal-box"><h3>Ekle</h3><input id="ap-n" class="inp" placeholder="Ad"><input id="ap-l" class="inp" placeholder="Link"><input id="ap-img" class="inp" placeholder="Img"><input id="ap-c" class="inp" placeholder="Kat"><input id="ap-cost" class="inp" value="5" type="number"><button class="btn" onclick="savePdf()">Kaydet</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-reqs" class="modal-overlay"><div class="modal-box"><h3>İstekler</h3><div id="adm-req-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
@@ -378,7 +393,7 @@
 
         let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
         let pdfs = [], balance = 0, selPdf = null;
-        let activeBanners = []; // Çoklu banner listesi
+        let activeBanners = []; 
 
         if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
 
@@ -422,7 +437,7 @@
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
             
-            // --- YENİ BANNER DİNLEYİCİSİ ---
+            // --- BANNER DİNLEYİCİSİ ---
             db.collection("banners").orderBy("date", "desc").onSnapshot(snap => {
                 activeBanners = [];
                 const adminListEl = document.getElementById('banner-list');
@@ -431,14 +446,9 @@
                 snap.forEach(doc => {
                     const b = doc.data();
                     const bid = doc.id;
-                    // Eğer limit 0 ise (sınırsız) veya görüntülenme sayısı limitten az ise aktiftir.
                     const isActive = b.limit === 0 || b.views < b.limit;
-                    
-                    if(isActive) {
-                        activeBanners.push({id: bid, ...b});
-                    }
+                    if(isActive) activeBanners.push({id: bid, ...b});
 
-                    // Admin listesi için HTML
                     adminHtml += `
                         <div class="admin-item">
                             <div style="display:flex; align-items:center;">
@@ -454,14 +464,9 @@
                 });
 
                 if(adminListEl) adminListEl.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Banner yok</div>";
-                
-                // Sadece veriyi güncelle, UI'ı hemen yenileme (titremeyi önlemek için)
-                // Yeni banner eklendiğinde veya silindiğinde manuel yenileme yapılacak, 
-                // ancak view count arttığında tüm reklamların yeniden render olmasını istemiyoruz.
             });
 
-            // İlk açılışta bannerları yükle
-            setTimeout(refreshAllBanners, 1000);
+            setTimeout(refreshAllBanners, 500); // Daha hızlı yükle
 
             db.collection("pdfs").orderBy("date", "desc").onSnapshot(snap => { 
                 pdfs = []; snap.forEach(d => pdfs.push({k:d.id, ...d.data()})); 
@@ -476,38 +481,72 @@
             if(sbList) sbList.innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
         }
 
-        // --- BANNER FONKSİYONLARI ---
+        // --- BANNER FONKSİYONLARI (HIZLI) ---
         function getBannerHTML() {
             if (activeBanners.length > 0) {
-                // Rastgele bir banner seç
                 const rand = Math.floor(Math.random() * activeBanners.length);
                 const b = activeBanners[rand];
-                // Resmi yükle ve yüklendiğinde sayacı 1 artır
+                // loading class'ını kaldırmayı beklemiyoruz, direkt basıyoruz
                 return `<a href="${b.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;" onclick="incrementBannerClick('${b.id}')">
-                            <img src="${b.img}" class="banner-img" onload="this.classList.add('loaded'); this.parentElement.parentElement.classList.remove('loading'); incrementBannerView('${b.id}')">
+                            <img src="${b.img}" class="banner-img" onload="incrementBannerView('${b.id}')">
                         </a>`;
             } else {
-                // Varsayılan AdBits
-                return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')"></iframe>`;
+                // AdBits
+                return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no"></iframe>`;
             }
         }
 
         function incrementBannerView(bid) {
-            // Firestore kotasını korumak için çok sık güncelleme yapmamaya çalışabilirsiniz.
-            // Ancak doğru sayım için her load işleminde artırıyoruz.
-            db.collection("banners").doc(bid).update({
-                views: firebase.firestore.FieldValue.increment(1)
-            }).catch(e => console.log(e));
+            db.collection("banners").doc(bid).update({ views: firebase.firestore.FieldValue.increment(1) }).catch(e => console.log(e));
         }
 
         function refreshAllBanners() { 
             document.querySelectorAll('.dynamic-banner').forEach(el => { 
-                el.classList.add('loading'); 
+                // Önceki gibi loading class eklemiyoruz, direkt içeriği değiştiriyoruz
                 el.innerHTML = getBannerHTML(); 
             }); 
         }
 
-        // Admin: Banner Ekleme
+        // --- PDF YÖNETİMİ (SİLME) ---
+        function openPdfList() {
+            const listEl = document.getElementById('pdf-admin-list');
+            const search = document.getElementById('adm-pdf-search').value.toLowerCase();
+            if(!listEl) return;
+            
+            let html = '';
+            const filtered = pdfs.filter(p => p.name.toLowerCase().includes(search));
+            
+            filtered.forEach(p => {
+                let img = p.img || '';
+                if(img.includes('imgur') && !img.includes('.jpg')) img += '.jpg';
+                
+                html += `
+                    <div class="admin-item">
+                        <div style="display:flex; align-items:center; overflow:hidden;">
+                            ${img ? `<img src="${img}">` : '<i class="fa-solid fa-file-pdf" style="margin-right:10px;"></i>'}
+                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; font-weight:600;">${p.name}</div>
+                        </div>
+                        <button class="btn btn-danger" style="width:32px; height:32px; padding:0; border-radius:8px;" onclick="deletePdf('${p.k}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            listEl.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sub)">Kitap bulunamadı</div>';
+            if(document.getElementById('m-list-pdfs').style.display !== 'flex') openModal('m-list-pdfs');
+        }
+
+        function deletePdf(id) {
+            if(confirm("Bu kitabı silmek istediğine emin misin?")) {
+                db.collection("pdfs").doc(id).delete().then(() => {
+                    showToast("Kitap silindi");
+                    openPdfList(); // Listeyi yenile
+                });
+            }
+        }
+
+        // --- DİĞER FONKSİYONLAR ---
         function addBanner() {
             let img = document.getElementById('ban-img').value; 
             let link = document.getElementById('ban-link').value;
@@ -530,17 +569,13 @@
                 document.getElementById('ban-img').value = '';
                 document.getElementById('ban-link').value = '';
                 document.getElementById('ban-limit').value = '';
-                refreshAllBanners(); // Yeni eklendiğinde güncelle
+                refreshAllBanners(); 
             });
         }
 
-        // Admin: Banner Silme
         function deleteBanner(id) {
             if(confirm("Bu banner silinsin mi?")) {
-                db.collection("banners").doc(id).delete().then(() => {
-                    showToast("Banner Silindi");
-                    refreshAllBanners();
-                });
+                db.collection("banners").doc(id).delete().then(() => { showToast("Banner Silindi"); refreshAllBanners(); });
             }
         }
 
@@ -568,7 +603,7 @@
                 let img = p.img || ''; if(img.includes('imgur.com') && !img.includes('i.imgur.com')) img = `https://i.imgur.com/${img.split('/').pop()}.jpg`;
                 let delay = i * 0.05;
                 l.innerHTML += `<div class="pdf-box" onclick="unlockPdf('${p.k}')" style="animation-delay: ${delay}s">${img ? `<img src="${img}" class="pdf-cover">` : `<div class="pdf-thumb"><i class="fa-solid fa-file-pdf"></i></div>`}<div style="font-weight:600; font-size:13px; text-align:left; width:100%; margin-bottom:5px; height:34px; overflow:hidden; line-height:1.3;">${p.name}</div><div style="display:flex; justify-content:space-between; width:100%; font-size:11px; color:var(--text-sub); border-top:0.5px solid var(--border); padding-top:8px;"><span><i class="fa-solid fa-download"></i> ${p.downloads||0}</span><span style="color:var(--accent); font-weight:700;">${p.cost||5} J</span></div></div>`;
-                if ((i + 1) % 3 === 0) { l.innerHTML += `<div class="ad-slot dynamic-banner loading" style="animation-delay: ${delay}s; animation: fadeInUp 0.5s forwards; grid-column:span 2; margin:10px 0;">${getBannerHTML()}</div>`; }
+                if ((i + 1) % 3 === 0) { l.innerHTML += `<div class="ad-slot dynamic-banner" style="animation-delay: ${delay}s; animation: fadeInUp 0.5s forwards; grid-column:span 2; margin:10px 0;">${getBannerHTML()}</div>`; }
             });
         }
 
