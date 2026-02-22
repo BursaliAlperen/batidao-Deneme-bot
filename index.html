@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Batidao Pro</title>
+    <title>Batidao Ultimate</title>
     
     <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
-    <!-- MONETAG ADS -->
-    <script src='//libtl.com/sdk.js' data-zone='10637714' data-sdk='show_10637714'></script>
+    <!-- MONETAG ADS (Hata Engelleyici ile) -->
+    <script src='//libtl.com/sdk.js' data-zone='10637714' data-sdk='show_10637714' onerror="console.warn('Reklamlar yüklenemedi (AdBlock?)')"></script>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -21,284 +21,222 @@
 
     <style>
         :root {
-            /* 2026 ULTRA MINIMAL DARK PALETTE */
+            /* THEME VARIABLES */
             --bg-root: #000000;
-            --bg-glass: rgba(28, 28, 30, 0.65);
-            --bg-surface: rgba(44, 44, 46, 0.4);
-            
-            --border: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 255, 255, 0.15);
-            
+            --bg-card: #1C1C1E;
+            --bg-surface: #2C2C2E;
             --text-main: #FFFFFF;
-            --text-muted: #86868b;
-            
-            --primary: #0A84FF; /* iOS Blue */
-            --accent: #FFD60A; /* iOS Gold */
-            --danger: #FF453A;
-            --success: #30D158;
-            
-            --blur: blur(25px);
-            --radius-L: 24px;
-            --radius-M: 18px;
-            --radius-S: 12px;
-            
-            --ease: cubic-bezier(0.25, 1, 0.5, 1);
+            --text-sub: #8E8E93;
+            --border: rgba(255, 255, 255, 0.12);
+            --primary: #0A84FF;
+            --accent: #FFD60A;
+            --glass: blur(25px);
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* RESET */
+        /* LIGHT MODE */
+        [data-theme="light"] {
+            --bg-root: #F2F2F7;
+            --bg-card: #FFFFFF;
+            --bg-surface: #E5E5EA;
+            --text-main: #000000;
+            --text-sub: #8E8E93;
+            --border: rgba(0, 0, 0, 0.1);
+            --primary: #007AFF;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body { 
             background-color: var(--bg-root); color: var(--text-main); 
             width: 100vw; height: 100vh; overflow: hidden; 
             display: flex; flex-direction: column;
-            font-weight: 400; -webkit-font-smoothing: antialiased;
+            transition: background-color 0.5s var(--ease-smooth), color 0.5s;
         }
 
-        /* SUBTLE AMBIENT BACKGROUND */
-        body::before {
-            content: ''; position: fixed; top: -20%; left: -20%; width: 140%; height: 140%;
-            background: radial-gradient(circle at 50% 0%, rgba(10, 132, 255, 0.08), transparent 40%);
-            z-index: -1; pointer-events: none;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-surface); border-radius: 10px; }
 
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-
-        /* LOADER - MINIMAL */
+        /* LOADER (Apple Intelligence Style) */
         #page-loader { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-root); z-index: 9999; 
+            background: var(--bg-root); z-index: 99999; 
             display: flex; align-items: center; justify-content: center; flex-direction: column;
-            transition: opacity 0.6s var(--ease);
+            transition: opacity 0.6s var(--ease-smooth);
         }
-        .loader-line {
-            width: 40px; height: 4px; background: rgba(255,255,255,0.1);
-            border-radius: 2px; overflow: hidden; position: relative;
+        .loader-glow {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(45deg, #0A84FF, #5E5CE6, #FF2D55);
+            filter: blur(25px); opacity: 0.8; animation: pulseGlow 2s infinite alternate;
         }
-        .loader-line::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--text-main); transform: translateX(-100%);
-            animation: loading 1.5s infinite var(--ease);
-        }
-        @keyframes loading { 0% { transform: translateX(-100%); } 50% { transform: translateX(0); } 100% { transform: translateX(100%); } }
+        .loader-content { position: absolute; z-index: 2; text-align: center; }
+        .loader-icon { font-size: 32px; color: white; animation: float 3s ease-in-out infinite; }
+        @keyframes pulseGlow { 0% { opacity: 0.5; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
         /* VIEWS */
-        #app-container { display: flex; flex-direction: column; height: 100%; width: 100%; opacity: 0; transition: opacity 0.8s var(--ease); }
-        #app-container.visible { opacity: 1; }
+        #app-container { display: flex; flex-direction: column; height: 100%; width: 100%; opacity: 0; transition: opacity 0.6s ease; visibility: hidden; }
+        #app-container.visible { opacity: 1; visibility: visible; }
 
         .view { 
-            flex: 1; display: none; flex-direction: column; opacity: 0; 
-            transform: scale(0.98) translateY(10px); filter: blur(10px);
-            transition: all 0.5s var(--ease);
+            flex: 1; display: none; flex-direction: column; 
+            opacity: 0; transform: scale(0.95) translateY(10px); filter: blur(5px);
+            transition: all 0.5s var(--ease-smooth);
             padding: 20px; padding-bottom: 110px; overflow: hidden;
         }
         .view.active { display: flex; opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         .scroll-content { flex: 1; overflow-y: auto; padding-bottom: 40px; }
 
-        /* HEADER - GLASS */
+        /* HEADER */
         .header { 
-            height: 56px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(0, 0, 0, 0.3); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+            height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(var(--bg-card), 0.5); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
             position: sticky; top: 0; z-index: 50; border-bottom: 0.5px solid var(--border);
         }
         .header-btn {
-            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); 
-            display: flex; align-items: center; justify-content: center; font-size: 14px; 
+            width: 38px; height: 38px; border-radius: 50%; background: var(--bg-surface); 
+            display: flex; align-items: center; justify-content: center; font-size: 16px; 
             color: var(--text-main); border: 0.5px solid var(--border); transition: 0.3s;
         }
-        .header-btn:active { background: var(--text-main); color: black; transform: scale(0.9); }
+        .header-btn:active { transform: scale(0.9); }
 
-        /* COMPONENTS - REFINED */
-        .btn { 
-            background: var(--text-main); color: black; border: none; padding: 16px; border-radius: var(--radius-M); 
-            font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; 
-            gap: 8px; font-size: 15px; transition: 0.3s var(--ease); letter-spacing: -0.3px;
-        }
-        .btn:active { transform: scale(0.96); opacity: 0.8; }
-        .btn-sec { background: rgba(255,255,255,0.08); color: var(--text-main); backdrop-filter: blur(10px); }
-        .btn-coin { background: var(--accent); color: black; box-shadow: 0 0 20px rgba(255, 214, 10, 0.15); }
-        .btn-danger { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
-
-        .inp, .txtarea { 
-            width: 100%; padding: 16px; border-radius: var(--radius-M); 
-            border: 0.5px solid var(--border); background: rgba(255,255,255,0.03); 
-            color: white; margin-bottom: 12px; font-size: 15px; outline: none;
-            transition: 0.3s; backdrop-filter: blur(5px);
-        }
-        .inp:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
-        .inp::placeholder { color: rgba(255,255,255,0.2); }
-
-        /* BANNER - SLEEK */
+        /* BANNER (Skeleton & Smooth Load) */
         .ad-slot {
-            width: 100%; min-height: 90px; background: rgba(255,255,255,0.02);
-            border-radius: var(--radius-M); margin: 20px 0; display: flex; align-items: center; justify-content: center;
+            width: 100%; min-height: 90px; background: var(--bg-surface);
+            border-radius: 18px; margin: 15px 0; display: flex; align-items: center; justify-content: center;
             overflow: hidden; border: 0.5px solid var(--border); position: relative;
+            transition: height 0.3s;
         }
-        .ad-slot::before {
-            content: 'ÖNERİLEN'; position: absolute; top: 4px; right: 8px;
-            font-size: 8px; color: var(--text-muted); letter-spacing: 1px;
+        .ad-slot.loading::before {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: translateX(-100%); animation: shimmer 1.5s infinite; z-index: 1;
         }
-        .custom-banner { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-M); display: block; }
-        .ad-full { grid-column: span 2; width: 100%; margin: 12px 0; border:none; background: transparent; }
-        iframe { width: 100% !important; height: 90px !important; border: none; border-radius: var(--radius-M); }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        
+        iframe { width: 100% !important; height: 90px !important; border: none; opacity: 0; transition: opacity 0.8s ease; z-index: 2; }
+        iframe.loaded { opacity: 1; }
 
-        /* CARDS & GRID */
+        /* CARDS & UI */
         .card {
-            background: var(--bg-glass); border: 0.5px solid var(--border);
-            border-radius: var(--radius-L); padding: 24px; margin-bottom: 20px;
-            position: relative; overflow: hidden; backdrop-filter: var(--blur);
+            background: var(--bg-card); border: 0.5px solid var(--border);
+            border-radius: 24px; padding: 24px; margin-bottom: 20px;
+            position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
+        .btn { 
+            background: var(--text-main); color: var(--bg-root); border: none; 
+            padding: 16px; border-radius: 20px; font-weight: 600; width: 100%; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            font-size: 15px; transition: 0.3s var(--ease-spring);
+        }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
+        .btn-sec { background: var(--bg-surface); color: var(--text-main); }
+        .btn-coin { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(255,159,10,0.3); }
+        .inp { 
+            width: 100%; padding: 16px; border-radius: 18px; 
+            border: 0.5px solid var(--border); background: var(--bg-surface); 
+            color: var(--text-main); margin-bottom: 12px; font-size: 15px; outline: none;
+            transition: 0.3s;
+        }
+        .inp:focus { border-color: var(--primary); background: var(--bg-card); }
+
+        /* PDF GRID */
         .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        
         .pdf-box { 
-            background: rgba(255,255,255,0.03); border: 0.5px solid var(--border);
-            border-radius: var(--radius-M); padding: 10px; display: flex; flex-direction: column; 
-            align-items: center; transition: 0.4s var(--ease); position: relative;
+            background: var(--bg-card); border: 0.5px solid var(--border);
+            border-radius: 20px; padding: 10px; display: flex; flex-direction: column; 
+            align-items: center; transition: 0.3s; position: relative; opacity: 0; animation: fadeInUp 0.5s forwards;
         }
-        .pdf-box:active { transform: scale(0.96); background: rgba(255,255,255,0.06); }
+        .pdf-box:active { transform: scale(0.96); background: var(--bg-surface); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .pdf-cover {
-            width: 100%; aspect-ratio: 1/1.45; object-fit: cover; border-radius: var(--radius-S);
-            background: #111; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .pdf-thumb {
-            width: 100%; aspect-ratio: 1/1.45; border-radius: var(--radius-S);
-            background: linear-gradient(to top right, #1c1c1e, #2c2c2e);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; color: var(--text-muted); margin-bottom: 12px;
-        }
+        .pdf-cover { width: 100%; aspect-ratio: 1/1.4; object-fit: cover; border-radius: 14px; background: var(--bg-surface); margin-bottom: 10px; }
+        .pdf-thumb { width: 100%; aspect-ratio: 1/1.4; border-radius: 14px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-root)); display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--text-sub); margin-bottom: 10px; }
 
-        .pdf-title {
-            font-size: 13px; font-weight: 500; text-align: left; width: 100%;
-            color: var(--text-main); margin-bottom: 6px; line-height: 1.3;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 34px;
-        }
-        
-        .pdf-meta {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
-            padding-top: 8px; border-top: 0.5px solid rgba(255,255,255,0.05);
-        }
-
-        /* NAVIGATION - FLOATING ISLAND */
-        .nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 88%; max-width: 380px; z-index: 100; }
+        /* NAV */
+        .nav-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; z-index: 100; }
         .nav { 
             background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(30px);
             border-radius: 32px; display: flex; justify-content: space-around; padding: 10px; 
-            border: 0.5px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 0.5px solid var(--border); box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
-        .nav-item { 
-            font-size: 20px; color: var(--text-muted); width: 48px; height: 48px; 
-            display: flex; align-items: center; justify-content: center; border-radius: 50%; 
-            transition: 0.4s var(--ease);
-        }
-        .nav-item.active { 
-            color: var(--bg-root); background: var(--text-main); 
-            transform: translateY(-6px) scale(1.1); box-shadow: 0 5px 15px rgba(255,255,255,0.2);
-        }
+        [data-theme="light"] .nav { background: rgba(255,255,255,0.85); }
+        .nav-item { font-size: 20px; color: var(--text-sub); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.4s var(--ease-spring); }
+        .nav-item.active { color: var(--bg-root); background: var(--text-main); transform: translateY(-8px) scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
-        /* MODALS - IOS STYLE */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.6); z-index: 2000; display: none; 
-            align-items: center; justify-content: center; backdrop-filter: blur(15px);
-            transition: opacity 0.3s;
-        }
-        .modal-box { 
-            background: #1C1C1E; width: 85%; max-width: 340px; 
-            border-radius: 28px; padding: 28px; text-align: center; 
-            border: 0.5px solid var(--border-highlight); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            transform: scale(0.9); transition: 0.4s var(--ease);
-            max-height: 85vh; overflow-y: auto;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-overlay.active .modal-box { transform: scale(1); }
+        /* ADMIN SCROLL (FIXED) */
+        .admin-scroll { max-height: 250px; overflow-y: auto; background: var(--bg-surface); border-radius: 16px; border: 0.5px solid var(--border); margin-top: 10px; }
+        .admin-item { padding: 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
 
-        .toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.9); color: white; padding: 10px 20px; border-radius: 30px;
-            font-size: 13px; z-index: 5000; border: 0.5px solid var(--border);
-            display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); letter-spacing: -0.2px;
-        }
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .modal-box { background: var(--bg-card); width: 88%; max-width: 350px; border-radius: 28px; padding: 25px; text-align: center; border: 0.5px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; transform: scale(0.9); transition: 0.3s var(--ease-spring); }
+        .modal-overlay.active { display: flex; } .modal-overlay.active .modal-box { transform: scale(1); }
 
-        /* ADMIN DASHBOARD - WIDGETS */
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .widget {
-            background: rgba(255,255,255,0.03); border: 0.5px solid var(--border);
-            padding: 16px; border-radius: var(--radius-M); text-align: center;
-        }
-        .action-btn {
-            background: rgba(255,255,255,0.03); border: 0.5px solid var(--border);
-            padding: 16px; border-radius: var(--radius-M); color: var(--text-main);
-            font-size: 13px; display: flex; flex-direction: column; gap: 8px; align-items: center;
-            transition: 0.3s;
-        }
-        .action-btn:active { background: rgba(255,255,255,0.08); }
-
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; z-index: 5000; border: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+
     <div id="page-loader">
-        <div class="loader-line"></div>
-        <div style="font-weight: 500; font-size: 14px; margin-top:20px; letter-spacing: 2px; opacity:0.7;">BATIDAO</div>
+        <div class="loader-glow"></div>
+        <div class="loader-content">
+            <div class="loader-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div style="font-size:18px; font-weight:700; margin-top:20px; letter-spacing:-0.5px; color:white;">Batidao</div>
+        </div>
     </div>
 
     <div id="app-container">
-        
         <!-- SIDEBAR -->
         <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1400; display:none; backdrop-filter:blur(5px);" id="sb-overlay" onclick="toggleSidebar(false)"></div>
-        <div id="sidebar" style="position:fixed; top:0; left:-280px; width:280px; height:100%; background: #090909; z-index:1500; transition:0.5s var(--ease); padding: 40px 24px; border-right:0.5px solid var(--border);">
-            <h2 style="margin-bottom: 30px; font-weight:600; font-size:24px;">Keşfet</h2>
+        <div id="sidebar" style="position:fixed; top:0; left:-280px; width:280px; height:100%; background: var(--bg-root); z-index:1500; transition:0.5s cubic-bezier(0.2, 0.8, 0.2, 1); padding: 40px 20px; border-right:0.5px solid var(--border);">
+            <h2 style="margin-bottom: 30px; font-weight:700;">Menü</h2>
             <div id="sb-list" style="overflow-y:auto; height: calc(100% - 60px);"></div>
         </div>
 
         <!-- HEADER -->
         <div class="header">
-            <div>
-                <div style="font-size: 10px; color: var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Kullanıcı</div>
-                <div style="font-size: 16px; font-weight: 600;" id="u-name">Misafir</div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="header-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars-staggered"></i></div>
             </div>
-            <div class="header-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars-staggered"></i></div>
+            <div class="header-btn" onclick="toggleTheme()" id="theme-icon"><i class="fa-solid fa-moon"></i></div>
         </div>
 
         <!-- 1. HOME -->
         <div id="v-home" class="view active">
             <div class="scroll-content">
-                <!-- DYNAMIC BANNER -->
-                <div class="ad-slot dynamic-banner">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading"></div>
 
-                <div class="card" style="background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0));">
-                    <h2 style="font-size:22px; font-weight:600; margin-bottom:6px;">İyi Günler 👋</h2>
-                    <p style="color:var(--text-muted); margin-bottom:20px; font-size:14px;">Kütüphanende bugün ne var?</p>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:16px; border-radius:var(--radius-M); border:0.5px solid var(--border);">
-                        <div><div style="font-size:10px; color:var(--text-muted); letter-spacing:0.5px;">BAKİYE</div><div style="font-size:26px; font-weight:700;" id="home-balance">0</div></div>
-                        <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:black; font-size:18px;"><i class="fa-solid fa-bolt"></i></div>
+                <div class="card" style="background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));">
+                    <h2 style="font-size:24px; font-weight:700; margin-bottom:5px;">Merhaba 👋</h2>
+                    <p style="color:var(--text-sub); margin-bottom:20px; font-size:14px;">Bilgiye ulaşmak şimdi çok kolay.</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.05); padding:16px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                        <div><div style="font-size:10px; color:var(--text-sub); font-weight:600;">BAKİYE</div><div style="font-size:28px; font-weight:800;" id="home-balance">0</div></div>
+                        <div style="width:45px; height:45px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:black; font-size:20px;"><i class="fa-solid fa-coins"></i></div>
                     </div>
                 </div>
 
-                <div style="font-weight:600; margin-bottom:12px; font-size:16px; padding-left:4px;">Kategoriler</div>
+                <div style="font-weight:700; margin-bottom:12px; font-size:17px;">Kategoriler</div>
                 <div id="home-cat-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
 
-                <div class="ad-slot dynamic-banner">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading"></div>
             </div>
         </div>
 
         <!-- 2. LIBRARY -->
         <div id="v-pdfs" class="view">
-            <div style="margin-bottom:16px;">
-                <h2 style="font-weight:600; font-size:24px; margin-bottom:10px;" id="lib-title">Kitaplar</h2>
+            <div style="margin-bottom:15px;">
+                <h2 style="font-weight:700; font-size:26px; margin-bottom:10px;" id="lib-title">Kitaplar</h2>
                 <div style="position:relative;">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:14px;"></i>
-                    <input class="inp" style="padding-left:44px; margin:0;" placeholder="Ara..." id="search" oninput="renderPdfs('all')">
+                    <i class="fa-solid fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-sub);"></i>
+                    <input class="inp" style="padding-left:45px; margin:0;" placeholder="Ara..." id="search" oninput="renderPdfs('all')">
                 </div>
             </div>
-            
             <div class="scroll-content">
-                <div class="ad-slot dynamic-banner" style="margin-top:0;">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading" style="margin-top:0;"></div>
                 <div id="pdf-list" class="pdf-grid"></div>
                 <div style="height:20px;"></div>
             </div>
@@ -307,23 +245,23 @@
         <!-- 3. EARN -->
         <div id="v-earn" class="view">
             <div class="scroll-content">
-                <h2 style="font-weight:600; font-size:24px; margin-bottom:20px; color:var(--accent);">Kazan</h2>
-                <div class="card" style="text-align:center; padding:32px;">
-                    <div style="font-size:48px; color:var(--accent); margin-bottom:8px; filter:drop-shadow(0 0 15px rgba(255, 214, 10, 0.3));"><i class="fa-solid fa-coins"></i></div>
-                    <div style="font-size:42px; font-weight:700;" id="earn-balance">0</div>
-                    <div style="color:var(--text-muted); font-size:11px; letter-spacing:1px;">TOPLAM JETON</div>
+                <h2 style="font-weight:700; font-size:26px; margin-bottom:20px; color:var(--accent);">Kazan</h2>
+                <div class="card" style="text-align:center; padding:35px;">
+                    <div style="font-size:50px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-coins"></i></div>
+                    <div style="font-size:42px; font-weight:800;" id="earn-balance">0</div>
+                    <div style="color:var(--text-sub); font-size:12px;">TOPLAM JETON</div>
                 </div>
                 <div class="card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-                        <h3 style="font-size:16px; font-weight:500;">Video İzle</h3>
-                        <span style="background:rgba(48, 209, 88, 0.1); color:var(--success); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600;">+1 Jeton</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <h3 style="font-size:16px;">Video İzle</h3>
+                        <span style="background:rgba(52,199,89,0.15); color:var(--success); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">+1 Jeton</span>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <input type="number" id="ad-loop-count" class="inp" placeholder="#" style="width:70px; margin:0; text-align:center;" value="1">
-                        <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">Başlat</button>
+                        <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">İzlemeye Başla</button>
                     </div>
                 </div>
-                <div class="ad-slot dynamic-banner">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading"></div>
             </div>
         </div>
 
@@ -331,82 +269,63 @@
         <div id="v-profile" class="view">
             <div class="scroll-content">
                 <div style="text-align:center; margin-top:30px; margin-bottom:30px;">
-                    <div id="u-avatar-box" style="width:90px; height:90px; border-radius:50%; background:var(--bg-surface); margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:36px; overflow:hidden; border:2px solid var(--border);">
+                    <div id="u-avatar-box" style="width:100px; height:100px; border-radius:50%; background:var(--bg-surface); margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:40px; overflow:hidden; border:2px solid var(--border);">
                         <i class="fa-solid fa-user"></i>
                     </div>
-                    <h2 id="profile-name" style="font-weight:600;">Kullanıcı</h2>
-                    <div style="color:var(--text-muted); font-size:13px; margin-top:4px;">Pro Üyelik</div>
+                    <h2 id="profile-name" style="font-weight:700;">Kullanıcı</h2>
+                    <div style="color:var(--text-sub); font-size:14px; margin-top:5px;">Pro Üye</div>
                 </div>
-                <div class="card" style="padding:4px;">
-                    <div onclick="openModal('m-req-user')" style="padding:16px; display:flex; align-items:center; border-bottom:0.5px solid var(--border); cursor:pointer;">
-                        <div style="width:32px; height:32px; background:rgba(10, 132, 255, 0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--primary); margin-right:12px;"><i class="fa-solid fa-paper-plane" style="font-size:14px;"></i></div>
-                        <div style="flex:1; font-size:14px;">PDF İste</div>
-                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                <div class="card" style="padding:0;">
+                    <div onclick="openModal('m-req-user')" style="padding:18px; display:flex; align-items:center; border-bottom:0.5px solid var(--border); cursor:pointer;">
+                        <i class="fa-solid fa-paper-plane" style="width:30px; color:var(--primary);"></i><div style="flex:1;">PDF İste</div><i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                     </div>
-                    <div onclick="openModal('m-user-notifs')" style="padding:16px; display:flex; align-items:center; cursor:pointer;">
-                        <div style="width:32px; height:32px; background:rgba(255, 214, 10, 0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--accent); margin-right:12px;"><i class="fa-solid fa-bell" style="font-size:14px;"></i></div>
-                        <div style="flex:1; font-size:14px;">Duyurular</div>
-                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    <div onclick="openModal('m-user-notifs')" style="padding:18px; display:flex; align-items:center; cursor:pointer;">
+                        <i class="fa-solid fa-bell" style="width:30px; color:var(--accent);"></i><div style="flex:1;">Duyurular</div><i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                     </div>
                 </div>
-                <div class="ad-slot dynamic-banner">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading"></div>
             </div>
         </div>
 
         <!-- 5. ADMIN -->
         <div id="v-admin" class="view">
             <div class="scroll-content">
-                <h2 style="margin-bottom:20px; font-weight:600;">Panel</h2>
-                <div class="admin-grid">
-                    <div class="widget"><div style="font-size:24px; font-weight:700; color:var(--primary);" id="st-users">0</div><div style="font-size:10px; color:var(--text-muted);">KULLANICI</div></div>
-                    <div class="widget"><div style="font-size:24px; font-weight:700; color:var(--success);" id="st-pdfs">0</div><div style="font-size:10px; color:var(--text-muted);">KİTAP</div></div>
+                <h2 style="margin-bottom:20px; font-weight:700;">Panel</h2>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <div class="card" style="padding:15px; text-align:center; margin:0;"><div style="font-size:24px; font-weight:700;" id="st-users">0</div><div style="font-size:10px; color:var(--text-sub);">KULLANICI</div></div>
+                    <div class="card" style="padding:15px; text-align:center; margin:0;"><div style="font-size:24px; font-weight:700;" id="st-pdfs">0</div><div style="font-size:10px; color:var(--text-sub);">KİTAP</div></div>
                 </div>
-                <div style="font-size:13px; color:var(--text-muted); margin-bottom:10px; font-weight:500;">İŞLEMLER</div>
-                <div class="admin-grid">
-                    <div class="action-btn" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus" style="font-size:20px; color:var(--primary);"></i>Ekle</div>
-                    <div class="action-btn" onclick="openModal('m-banner')"><i class="fa-solid fa-image" style="font-size:20px; color:var(--accent);"></i>Banner</div>
-                    <div class="action-btn" onclick="openModal('m-users')"><i class="fa-solid fa-users" style="font-size:20px; color:var(--text-main);"></i>Üyeler</div>
-                    <div class="action-btn" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn" style="font-size:20px; color:var(--danger);"></i>Duyuru</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <div class="btn btn-sec" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus"></i> Ekle</div>
+                    <div class="btn btn-sec" onclick="openModal('m-banner')"><i class="fa-solid fa-image"></i> Banner</div>
+                    <div class="btn btn-sec" onclick="openModal('m-users')"><i class="fa-solid fa-users"></i> Üyeler</div>
+                    <div class="btn btn-sec" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn"></i> Duyuru</div>
                 </div>
-                <div style="font-size:13px; color:var(--text-muted); margin-bottom:10px; font-weight:500;">SON ÜYELER</div>
-                <div id="recent-users-list" style="background:rgba(255,255,255,0.02); border-radius:var(--radius-M); overflow:hidden;"></div>
+                <h4 style="margin-bottom:10px; color:var(--text-sub);">Son Katılanlar</h4>
+                <div class="admin-scroll" id="recent-users-list"></div>
             </div>
         </div>
 
         <!-- MODALS -->
-        <!-- UNLOCK -->
         <div id="m-unlock" class="modal-overlay">
             <div class="modal-box">
-                <div style="width:56px; height:56px; background:rgba(255, 214, 10, 0.1); border-radius:50%; color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:22px;"><i class="fa-solid fa-lock-open"></i></div>
+                <div style="width:60px; height:60px; background:rgba(255, 159, 10, 0.1); border-radius:50%; color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:24px;"><i class="fa-solid fa-lock-open"></i></div>
                 <h3 style="margin-bottom:8px;">Kilidi Aç</h3>
-                <p id="unlock-msg" style="color:var(--text-muted); font-size:14px; margin-bottom:20px;"></p>
-                <div class="ad-slot dynamic-banner" style="min-height:70px; margin:12px 0;">Yükleniyor...</div>
+                <p id="unlock-msg" style="color:var(--text-sub); font-size:14px; margin-bottom:20px;"></p>
+                <div class="ad-slot dynamic-banner loading" style="min-height:70px;"></div>
                 <button class="btn btn-coin" id="btn-unlock-pdf">Onayla</button>
                 <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Vazgeç</button>
-                <div class="ad-slot dynamic-banner" style="min-height:70px; margin:12px 0 0 0;">Yükleniyor...</div>
+                <div class="ad-slot dynamic-banner loading" style="min-height:70px; margin-top:15px;"></div>
             </div>
         </div>
 
-        <!-- BANNER MANAGER -->
-        <div id="m-banner" class="modal-overlay">
-            <div class="modal-box">
-                <h3>Banner Yönetimi</h3>
-                <p style="color:var(--text-muted); font-size:13px; margin:10px 0 15px;">Kendi reklamını ekle veya sil.</p>
-                <input id="ban-img" class="inp" placeholder="Görsel (Imgur)">
-                <input id="ban-link" class="inp" placeholder="Link">
-                <button class="btn" onclick="saveBanner()">Yayına Al</button>
-                <button class="btn btn-danger" onclick="resetBanner()" style="margin-top:10px;">Sıfırla (Adsense)</button>
-                <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Kapat</button>
-            </div>
-        </div>
-
-        <!-- OTHER MODALS -->
-        <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner" style="min-height:60px; margin:10px 0;"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Kapat</button></div></div>
+        <div id="m-banner" class="modal-overlay"><div class="modal-box"><h3>Banner</h3><input id="ban-img" class="inp" placeholder="Imgur Link"><input id="ban-link" class="inp" placeholder="Link"><button class="btn" onclick="saveBanner()">Kaydet</button><button class="btn btn-sec" onclick="resetBanner()" style="margin-top:10px">Sıfırla</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner loading"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-pdf" class="modal-overlay"><div class="modal-box"><h3>Ekle</h3><input id="ap-n" class="inp" placeholder="Ad"><input id="ap-l" class="inp" placeholder="Link"><input id="ap-img" class="inp" placeholder="Img"><input id="ap-c" class="inp" placeholder="Kat"><input id="ap-cost" class="inp" value="5" type="number"><button class="btn" onclick="savePdf()">Kaydet</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
-        <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" style="height:250px; overflow-y:auto; text-align:left;"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
-        <div id="m-reqs" class="modal-overlay"><div class="modal-box"><h3>İstekler</h3><div id="adm-req-list" style="height:250px; overflow-y:auto; text-align:left;"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <div id="m-reqs" class="modal-overlay"><div class="modal-box"><h3>İstekler</h3><div id="adm-req-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-add-notif" class="modal-overlay"><div class="modal-box"><h3>Duyuru</h3><textarea id="notif-txt" class="inp" style="height:80px;"></textarea><button class="btn" onclick="sendNotification()">Yayınla</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
-        <div id="m-user-notifs" class="modal-overlay"><div class="modal-box"><h3>Duyurular</h3><div id="user-notif-list" style="max-height:200px;overflow-y:auto"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <div id="m-user-notifs" class="modal-overlay"><div class="modal-box"><h3>Duyurular</h3><div id="user-notif-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
 
         <!-- NAV -->
         <div class="nav-container">
@@ -418,10 +337,10 @@
                 <div class="nav-item" id="nav-admin" style="display:none;" onclick="go('admin',this); loadStats();"><i class="fa-solid fa-shield-halved"></i></div>
             </div>
         </div>
-
     </div>
 
     <script>
+        // CONFIG
         const CFG = {
             apiKey: "AIzaSyCwWi_5x4EWDL7m8PfrhGWsR88WVRP9VI4",
             authDomain: "batidao-27d06.firebaseapp.com",
@@ -432,6 +351,7 @@
         };
         const ADMIN_IDS = [7904032877, 8392479231];
         
+        // INIT
         firebase.initializeApp(CFG);
         const db = firebase.firestore();
         const tg = window.Telegram.WebApp;
@@ -440,22 +360,45 @@
         let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
         let pdfs = [], balance = 0, selPdf = null, customBanner = null;
 
-        if (user.id === 0) {
-            let s = localStorage.getItem('guest_id');
-            if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); }
-            user.id = s;
+        if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
+
+        function toggleTheme() {
+            let t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            document.getElementById('theme-icon').innerHTML = t==='light' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         }
 
+        // --- GÜVENLİ BAŞLANGIÇ (TIMEOUT FIX) ---
         window.onload = () => {
             initApp();
-            setTimeout(() => { document.getElementById('page-loader').style.opacity = '0'; setTimeout(()=>document.getElementById('page-loader').style.display='none',600); document.getElementById('app-container').classList.add('visible'); }, 1500);
+            // 2.5 saniye sonra veri gelmese bile açıl
+            setTimeout(() => { 
+                const loader = document.getElementById('page-loader');
+                if(loader && loader.style.display !== 'none') {
+                    loader.style.opacity = '0'; setTimeout(()=>loader.style.display='none', 600); 
+                    document.getElementById('app-container').classList.add('visible'); 
+                }
+            }, 2500);
+        }
+
+        function safeSetText(id, txt) {
+            const el = document.getElementById(id);
+            if(el) el.innerText = txt;
         }
 
         function initApp() {
-            document.getElementById('u-name').innerText = user.first_name;
-            document.getElementById('profile-name').innerText = user.first_name;
-            if(ADMIN_IDS.includes(Number(user.id)) || ADMIN_IDS.includes(user.id)) document.getElementById('nav-admin').style.display='flex';
-            if(user.photo_url) document.getElementById('u-avatar-box').innerHTML = `<img src="${user.photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+            document.documentElement.setAttribute('data-theme', 'dark'); // Default Dark
+            safeSetText('u-name', user.first_name);
+            safeSetText('profile-name', user.first_name);
+            
+            if(ADMIN_IDS.includes(Number(user.id)) || ADMIN_IDS.includes(user.id)) {
+                const navAdmin = document.getElementById('nav-admin');
+                if(navAdmin) navAdmin.style.display='flex';
+            }
+            if(user.photo_url) {
+                const ava = document.getElementById('u-avatar-box');
+                if(ava) ava.innerHTML = `<img src="${user.photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+            }
 
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
@@ -464,30 +407,33 @@
             db.collection("pdfs").orderBy("date", "desc").onSnapshot(snap => { 
                 pdfs = []; snap.forEach(d => pdfs.push({k:d.id, ...d.data()})); 
                 renderPdfs('all');
-                document.getElementById('st-pdfs').innerText = pdfs.length;
+                safeSetText('st-pdfs', pdfs.length);
             });
 
             const cats = ["Matematik","Geometri","Fizik","Kimya","Biyoloji","Türkçe","Edebiyat","Tarih","Coğrafya"];
-            document.getElementById('home-cat-grid').innerHTML = cats.map(c => `<div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-M); border:0.5px solid var(--border); text-align:center; font-size:13px;" onclick="filter('${c}')">${c}</div>`).join('');
-            document.getElementById('sb-list').innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
+            const catGrid = document.getElementById('home-cat-grid');
+            if(catGrid) catGrid.innerHTML = cats.map((c, i) => `<div style="background:var(--bg-card); padding:14px; border-radius:18px; border:0.5px solid var(--border); text-align:center; font-size:13px; animation: fadeInUp 0.5s forwards; animation-delay: ${i*0.05}s; opacity:0;" onclick="filter('${c}')">${c}</div>`).join('');
+            const sbList = document.getElementById('sb-list');
+            if(sbList) sbList.innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
         }
 
+        // --- BANNER ---
         function getBannerHTML() {
             if (customBanner && customBanner.active && customBanner.img) {
-                return `<a href="${customBanner.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;"><img src="${customBanner.img}" class="custom-banner"><div style="position:absolute; top:4px; right:4px; font-size:8px; background:rgba(0,0,0,0.5); padding:2px 4px; border-radius:4px;">SPONSOR</div></a>`;
+                return `<a href="${customBanner.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;"><img src="${customBanner.img}" style="width:100%;height:100%;object-fit:cover;" onload="this.parentElement.parentElement.classList.remove('loading')"></a>`;
             } else {
-                return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no"></iframe>`;
+                return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')"></iframe>`;
             }
         }
-        function refreshAllBanners() { document.querySelectorAll('.dynamic-banner').forEach(el => el.innerHTML = getBannerHTML()); if(document.getElementById('v-pdfs').classList.contains('active')) renderPdfs('all'); }
+        function refreshAllBanners() { document.querySelectorAll('.dynamic-banner').forEach(el => { el.classList.add('loading'); el.innerHTML = getBannerHTML(); }); }
 
         function saveBanner() {
             let img = document.getElementById('ban-img').value; let link = document.getElementById('ban-link').value;
             if (img && img.includes('imgur.com') && !img.includes('i.imgur.com')) { let id = img.split('/').pop().split('?')[0]; if (id && !id.includes('.')) img = `https://i.imgur.com/${id}.jpg`; }
-            if(!img) { showToast("Link gerekli!", "error"); return; }
-            db.collection("settings").doc("banner").set({ img: img, link: link, active: true }).then(() => { showToast("Yayında!"); closeM(); });
+            if(!img) { showToast("Görsel şart", "error"); return; }
+            db.collection("settings").doc("banner").set({ img: img, link: link, active: true }).then(() => { showToast("Yayında"); closeM(); });
         }
-        function resetBanner() { db.collection("settings").doc("banner").set({ active: false }, {merge:true}).then(() => { showToast("Sıfırlandı."); closeM(); }); }
+        function resetBanner() { db.collection("settings").doc("banner").set({ active: false }, {merge:true}).then(() => { showToast("Sıfırlandı"); closeM(); }); }
 
         function watchRewardedAd() {
             let count = parseInt(document.getElementById('ad-loop-count').value);
@@ -497,33 +443,23 @@
             else showToast("Reklam yüklenemedi", "error");
         }
         function processAd(r) {
-            if(r <= 0) { showToast("Bitti!"); return; }
+            if(r <= 0) { showToast("Tamamlandı"); return; }
             window.show_10637714().then(() => {
                 db.collection("users").doc(String(user.id)).update({ balance: firebase.firestore.FieldValue.increment(1) })
                 .then(() => { showToast(`✅ +1 Jeton! Kalan: ${r-1}`); setTimeout(() => processAd(r-1), 1000); });
-            }).catch(() => showToast("Kapatıldı", "error"));
+            }).catch(() => showToast("İptal", "error"));
         }
 
         function renderPdfs(c) {
-            const l = document.getElementById('pdf-list'); l.innerHTML = '';
+            const l = document.getElementById('pdf-list'); if(!l) return; l.innerHTML = '';
             const q = document.getElementById('search').value.toLowerCase();
             const f = pdfs.filter(p => (c==='all' || (p.cat&&p.cat.includes(c))) && p.name.toLowerCase().includes(q));
-            
-            if(!f.length) { l.innerHTML = '<div style="grid-column:span 2; text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">Sonuç yok.</div>'; return; }
-            
+            if(!f.length) { l.innerHTML = '<div style="grid-column:span 2; text-align:center; padding:30px; color:var(--text-sub); font-size:13px;">Sonuç yok.</div>'; return; }
             f.forEach((p, i) => {
-                let img = p.img || '';
-                if(img.includes('imgur.com') && !img.includes('i.imgur.com')) img = `https://i.imgur.com/${img.split('/').pop()}.jpg`;
-                l.innerHTML += `
-                <div class="pdf-box" onclick="unlockPdf('${p.k}')">
-                    ${img ? `<img src="${img}" class="pdf-cover">` : `<div class="pdf-thumb"><i class="fa-solid fa-file-pdf"></i></div>`}
-                    <div class="pdf-title">${p.name}</div>
-                    <div class="pdf-meta">
-                        <span style="font-size:11px; color:var(--text-muted);"><i class="fa-solid fa-download" style="margin-right:4px"></i>${p.downloads||0}</span>
-                        <span style="font-size:11px; color:var(--accent); font-weight:700;">${p.cost||5} J</span>
-                    </div>
-                </div>`;
-                if ((i + 1) % 3 === 0) { l.innerHTML += `<div class="ad-full ad-slot dynamic-banner">${getBannerHTML()}</div>`; }
+                let img = p.img || ''; if(img.includes('imgur.com') && !img.includes('i.imgur.com')) img = `https://i.imgur.com/${img.split('/').pop()}.jpg`;
+                let delay = i * 0.05;
+                l.innerHTML += `<div class="pdf-box" onclick="unlockPdf('${p.k}')" style="animation-delay: ${delay}s">${img ? `<img src="${img}" class="pdf-cover">` : `<div class="pdf-thumb"><i class="fa-solid fa-file-pdf"></i></div>`}<div style="font-weight:600; font-size:13px; text-align:left; width:100%; margin-bottom:5px; height:34px; overflow:hidden; line-height:1.3;">${p.name}</div><div style="display:flex; justify-content:space-between; width:100%; font-size:11px; color:var(--text-sub); border-top:0.5px solid var(--border); padding-top:8px;"><span><i class="fa-solid fa-download"></i> ${p.downloads||0}</span><span style="color:var(--accent); font-weight:700;">${p.cost||5} J</span></div></div>`;
+                if ((i + 1) % 3 === 0) { l.innerHTML += `<div class="ad-slot dynamic-banner loading" style="animation-delay: ${delay}s; animation: fadeInUp 0.5s forwards; grid-column:span 2; margin:10px 0;">${getBannerHTML()}</div>`; }
             });
         }
 
@@ -531,7 +467,7 @@
             selPdf = pdfs.find(p => p.k === k);
             const unlocked = (JSON.parse(localStorage.getItem('unlocked')||'[]')).includes(k);
             if(unlocked) { copyText(selPdf.link); return; }
-            document.getElementById('unlock-msg').innerText = `${selPdf.name} - ${selPdf.cost||5} Jeton`;
+            safeSetText('unlock-msg', `${selPdf.name} - ${selPdf.cost||5} Jeton`);
             refreshAllBanners();
             document.getElementById('btn-unlock-pdf').onclick = () => {
                 if(balance >= (selPdf.cost||5)) {
@@ -558,24 +494,27 @@
         }
         function openModal(i) { document.getElementById(i).style.display='flex'; setTimeout(()=>document.getElementById(i).classList.add('active'),10); }
         function closeM() { document.querySelectorAll('.modal-overlay').forEach(x => { x.classList.remove('active'); setTimeout(()=>x.style.display='none',300); }); }
-        function filter(c) { toggleSidebar(false); document.getElementById('lib-title').innerText=c; renderPdfs(c); go('pdfs', document.querySelectorAll('.nav-item')[1]); }
+        function filter(c) { toggleSidebar(false); safeSetText('lib-title', c); renderPdfs(c); go('pdfs', document.querySelectorAll('.nav-item')[1]); }
         function copyText(t) { navigator.clipboard.writeText(t); showToast("Link Kopyalandı!"); }
         function showToast(m, t='s') { 
-            const d=document.createElement('div'); d.className='toast'; d.innerHTML = (t==='error'?'<i class="fa-solid fa-triangle-exclamation" style="color:#ff453a"></i> ':'<i class="fa-solid fa-check-circle" style="color:#30d158"></i> ') + m;
+            const d=document.createElement('div'); d.className='toast'; d.innerHTML = (t==='error'?'<i class="fa-solid fa-triangle-exclamation" style="color:#FF3B30"></i> ':'<i class="fa-solid fa-check-circle" style="color:#34C759"></i> ') + m;
             document.getElementById('toast-container').appendChild(d); setTimeout(()=>d.remove(),3000);
         }
 
         function loadStats() {
             db.collection("users").get().then(s => {
-                document.getElementById('st-users').innerText = s.size;
+                safeSetText('st-users', s.size);
                 let list = "";
-                s.docs.slice(0,10).forEach(d => { let u = d.data(); list += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:0.5px solid var(--border); font-size:12px;"><div><b>${u.name}</b></div><div style="color:var(--text-muted)">${new Date(u.last).toLocaleDateString()}</div></div>`; });
-                document.getElementById('recent-users-list').innerHTML = list || "<div style='padding:10px;text-align:center;font-size:12px;'>Yok</div>";
-                document.getElementById('adm-user-list').innerHTML = list;
+                s.docs.slice(0,50).forEach(d => { let u = d.data(); list += `<div class="admin-item"><div><b>${u.name}</b></div><div style="color:var(--text-sub)">${new Date(u.last).toLocaleDateString()}</div></div>`; });
+                const recentList = document.getElementById('recent-users-list');
+                const adminList = document.getElementById('adm-user-list');
+                if(recentList) recentList.innerHTML = list || "<div style='padding:10px;text-align:center;'>Veri yok</div>";
+                if(adminList) adminList.innerHTML = list;
             });
             db.collection("requests").get().then(s => {
-                let list = ""; s.docs.forEach(d => { list += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:0.5px solid var(--border); font-size:13px;"><div>${d.data().book}</div><button class="btn btn-danger" style="width:24px;height:24px;padding:0;font-size:10px;" onclick="delReq('${d.id}')">X</button></div>`; });
-                document.getElementById('adm-req-list').innerHTML = list || "<div style='padding:10px'>İstek yok</div>";
+                let list = ""; s.docs.forEach(d => { list += `<div class="admin-item"><div>${d.data().book}</div><button class="btn btn-danger" style="width:24px;height:24px;padding:0;font-size:10px;" onclick="delReq('${d.id}')">X</button></div>`; });
+                const reqList = document.getElementById('adm-req-list');
+                if(reqList) reqList.innerHTML = list || "<div style='padding:10px'>İstek yok</div>";
             });
         }
         function savePdf() {
