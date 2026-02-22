@@ -115,8 +115,9 @@
         }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         
-        iframe { width: 100% !important; height: 90px !important; border: none; opacity: 0; transition: opacity 0.8s ease; z-index: 2; }
-        iframe.loaded { opacity: 1; }
+        /* İframe ve Resim optimizasyonu: 0.8s yerine 0.3s */
+        iframe, .banner-img { width: 100% !important; height: 90px !important; border: none; opacity: 0; transition: opacity 0.3s ease; z-index: 2; object-fit: cover; }
+        iframe.loaded, .banner-img.loaded { opacity: 1; }
 
         /* CARDS & UI */
         .card {
@@ -133,6 +134,8 @@
         .btn:active { transform: scale(0.95); opacity: 0.8; }
         .btn-sec { background: var(--bg-surface); color: var(--text-main); }
         .btn-coin { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(255,159,10,0.3); }
+        .btn-danger { background: rgba(255, 59, 48, 0.15); color: #FF3B30; border: 1px solid rgba(255, 59, 48, 0.3); }
+
         .inp { 
             width: 100%; padding: 16px; border-radius: 18px; 
             border: 0.5px solid var(--border); background: var(--bg-surface); 
@@ -168,6 +171,7 @@
         /* ADMIN SCROLL (FIXED) */
         .admin-scroll { max-height: 250px; overflow-y: auto; background: var(--bg-surface); border-radius: 16px; border: 0.5px solid var(--border); margin-top: 10px; }
         .admin-item { padding: 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-item img { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; margin-right: 10px; }
 
         /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
@@ -319,7 +323,22 @@
             </div>
         </div>
 
-        <div id="m-banner" class="modal-overlay"><div class="modal-box"><h3>Banner</h3><input id="ban-img" class="inp" placeholder="Imgur Link"><input id="ban-link" class="inp" placeholder="Link"><button class="btn" onclick="saveBanner()">Kaydet</button><button class="btn btn-sec" onclick="resetBanner()" style="margin-top:10px">Sıfırla</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <!-- YENİ BANNER MODALI -->
+        <div id="m-banner" class="modal-overlay">
+            <div class="modal-box">
+                <h3>Banner Yönetimi</h3>
+                <input id="ban-img" class="inp" placeholder="Görsel Linki (Imgur vb.)">
+                <input id="ban-link" class="inp" placeholder="Yönlendirilecek Link">
+                <input id="ban-limit" type="number" class="inp" placeholder="Hedef Görüntülenme (0 = Sınırsız)">
+                <button class="btn" onclick="addBanner()">Ekle</button>
+                
+                <h4 style="margin-top:15px; font-size:13px; color:var(--text-sub); text-align:left;">Aktif Bannerlar</h4>
+                <div id="banner-list" class="admin-scroll" style="max-height:150px; margin-top:5px;"></div>
+                
+                <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button>
+            </div>
+        </div>
+
         <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner loading"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-pdf" class="modal-overlay"><div class="modal-box"><h3>Ekle</h3><input id="ap-n" class="inp" placeholder="Ad"><input id="ap-l" class="inp" placeholder="Link"><input id="ap-img" class="inp" placeholder="Img"><input id="ap-c" class="inp" placeholder="Kat"><input id="ap-cost" class="inp" value="5" type="number"><button class="btn" onclick="savePdf()">Kaydet</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
@@ -358,7 +377,8 @@
         tg.expand();
 
         let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
-        let pdfs = [], balance = 0, selPdf = null, customBanner = null;
+        let pdfs = [], balance = 0, selPdf = null;
+        let activeBanners = []; // Çoklu banner listesi
 
         if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
 
@@ -368,10 +388,9 @@
             document.getElementById('theme-icon').innerHTML = t==='light' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         }
 
-        // --- GÜVENLİ BAŞLANGIÇ (TIMEOUT FIX) ---
+        // --- GÜVENLİ BAŞLANGIÇ ---
         window.onload = () => {
             initApp();
-            // 2.5 saniye sonra veri gelmese bile açıl
             setTimeout(() => { 
                 const loader = document.getElementById('page-loader');
                 if(loader && loader.style.display !== 'none') {
@@ -402,7 +421,47 @@
 
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
-            db.collection("settings").doc("banner").onSnapshot(doc => { customBanner = doc.exists ? doc.data() : null; refreshAllBanners(); });
+            
+            // --- YENİ BANNER DİNLEYİCİSİ ---
+            db.collection("banners").orderBy("date", "desc").onSnapshot(snap => {
+                activeBanners = [];
+                const adminListEl = document.getElementById('banner-list');
+                let adminHtml = "";
+                
+                snap.forEach(doc => {
+                    const b = doc.data();
+                    const bid = doc.id;
+                    // Eğer limit 0 ise (sınırsız) veya görüntülenme sayısı limitten az ise aktiftir.
+                    const isActive = b.limit === 0 || b.views < b.limit;
+                    
+                    if(isActive) {
+                        activeBanners.push({id: bid, ...b});
+                    }
+
+                    // Admin listesi için HTML
+                    adminHtml += `
+                        <div class="admin-item">
+                            <div style="display:flex; align-items:center;">
+                                <img src="${b.img}">
+                                <div>
+                                    <div style="font-weight:600; font-size:12px;">${b.limit === 0 ? 'Sınırsız' : b.limit + ' Limit'}</div>
+                                    <div style="font-size:10px; color:var(--text-sub);"><i class="fa-solid fa-eye"></i> ${b.views || 0} Görüntülenme</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" style="width:28px; height:28px; padding:0; border-radius:8px;" onclick="deleteBanner('${bid}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+
+                if(adminListEl) adminListEl.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Banner yok</div>";
+                
+                // Sadece veriyi güncelle, UI'ı hemen yenileme (titremeyi önlemek için)
+                // Yeni banner eklendiğinde veya silindiğinde manuel yenileme yapılacak, 
+                // ancak view count arttığında tüm reklamların yeniden render olmasını istemiyoruz.
+            });
+
+            // İlk açılışta bannerları yükle
+            setTimeout(refreshAllBanners, 1000);
 
             db.collection("pdfs").orderBy("date", "desc").onSnapshot(snap => { 
                 pdfs = []; snap.forEach(d => pdfs.push({k:d.id, ...d.data()})); 
@@ -417,23 +476,73 @@
             if(sbList) sbList.innerHTML = cats.map(c => `<div style="padding:16px; color:var(--text-main); border-bottom:0.5px solid var(--border);" onclick="filter('${c}')">${c}</div>`).join('');
         }
 
-        // --- BANNER ---
+        // --- BANNER FONKSİYONLARI ---
         function getBannerHTML() {
-            if (customBanner && customBanner.active && customBanner.img) {
-                return `<a href="${customBanner.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;"><img src="${customBanner.img}" style="width:100%;height:100%;object-fit:cover;" onload="this.parentElement.parentElement.classList.remove('loading')"></a>`;
+            if (activeBanners.length > 0) {
+                // Rastgele bir banner seç
+                const rand = Math.floor(Math.random() * activeBanners.length);
+                const b = activeBanners[rand];
+                // Resmi yükle ve yüklendiğinde sayacı 1 artır
+                return `<a href="${b.link || '#'}" target="_blank" style="display:block; width:100%; height:100%;" onclick="incrementBannerClick('${b.id}')">
+                            <img src="${b.img}" class="banner-img" onload="this.classList.add('loaded'); this.parentElement.parentElement.classList.remove('loading'); incrementBannerView('${b.id}')">
+                        </a>`;
             } else {
+                // Varsayılan AdBits
                 return `<iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')"></iframe>`;
             }
         }
-        function refreshAllBanners() { document.querySelectorAll('.dynamic-banner').forEach(el => { el.classList.add('loading'); el.innerHTML = getBannerHTML(); }); }
 
-        function saveBanner() {
-            let img = document.getElementById('ban-img').value; let link = document.getElementById('ban-link').value;
-            if (img && img.includes('imgur.com') && !img.includes('i.imgur.com')) { let id = img.split('/').pop().split('?')[0]; if (id && !id.includes('.')) img = `https://i.imgur.com/${id}.jpg`; }
-            if(!img) { showToast("Görsel şart", "error"); return; }
-            db.collection("settings").doc("banner").set({ img: img, link: link, active: true }).then(() => { showToast("Yayında"); closeM(); });
+        function incrementBannerView(bid) {
+            // Firestore kotasını korumak için çok sık güncelleme yapmamaya çalışabilirsiniz.
+            // Ancak doğru sayım için her load işleminde artırıyoruz.
+            db.collection("banners").doc(bid).update({
+                views: firebase.firestore.FieldValue.increment(1)
+            }).catch(e => console.log(e));
         }
-        function resetBanner() { db.collection("settings").doc("banner").set({ active: false }, {merge:true}).then(() => { showToast("Sıfırlandı"); closeM(); }); }
+
+        function refreshAllBanners() { 
+            document.querySelectorAll('.dynamic-banner').forEach(el => { 
+                el.classList.add('loading'); 
+                el.innerHTML = getBannerHTML(); 
+            }); 
+        }
+
+        // Admin: Banner Ekleme
+        function addBanner() {
+            let img = document.getElementById('ban-img').value; 
+            let link = document.getElementById('ban-link').value;
+            let limit = parseInt(document.getElementById('ban-limit').value) || 0;
+
+            if (img && img.includes('imgur.com') && !img.includes('i.imgur.com')) { 
+                let id = img.split('/').pop().split('?')[0]; 
+                if (id && !id.includes('.')) img = `https://i.imgur.com/${id}.jpg`; 
+            }
+            if(!img) { showToast("Görsel şart", "error"); return; }
+            
+            db.collection("banners").add({ 
+                img: img, 
+                link: link, 
+                limit: limit,
+                views: 0,
+                date: Date.now() 
+            }).then(() => { 
+                showToast("Banner Eklendi"); 
+                document.getElementById('ban-img').value = '';
+                document.getElementById('ban-link').value = '';
+                document.getElementById('ban-limit').value = '';
+                refreshAllBanners(); // Yeni eklendiğinde güncelle
+            });
+        }
+
+        // Admin: Banner Silme
+        function deleteBanner(id) {
+            if(confirm("Bu banner silinsin mi?")) {
+                db.collection("banners").doc(id).delete().then(() => {
+                    showToast("Banner Silindi");
+                    refreshAllBanners();
+                });
+            }
+        }
 
         function watchRewardedAd() {
             let count = parseInt(document.getElementById('ad-loop-count').value);
