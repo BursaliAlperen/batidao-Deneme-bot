@@ -8,19 +8,9 @@
     <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
-    <!-- MONETAG REWARDED ADS (Ödüllü Reklam) -->
+    <!-- MONETAG REWARDED ADS (GÜNCEL SDK) -->
+    <!-- AdBlock kapatılmalı -->
     <script src='//libtl.com/sdk.js' data-zone='10637714' data-sdk='show_10637714'></script>
-    
-    <!-- MONETAG BANNER ADS - Optimize edildi -->
-    <script type='text/javascript'>
-        (function() {
-            var s = document.createElement('script');
-            s.type = 'text/javascript';
-            s.async = true;
-            s.src = '//libtl.com/display/10637714?rnd=' + Math.random();
-            document.head.appendChild(s);
-        })();
-    </script>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -28,810 +18,231 @@
     
     <!-- ASSETS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #F5F5F7;
+            /* 2026 APPLE TITANIUM DARK PALETTE - ALPERENTHE EDITION */
+            --bg: #121212; /* Deep Matte Black */
+            --card-bg: #1C1C1E; /* Titanium Grey */
+            --modal-bg: #2C2C2E; /* Lighter Grey */
+            
             --white: #FFFFFF;
-            --primary: #007AFF;
-            --primary-dark: #0051D5;
-            --secondary: #5856D6;
-            --accent: #FF2D55;
-            --text-main: #1D1C1F;
-            --text-sub: #8E8E93;
-            --border: #E5E5EA;
-            --coin: #FF9F0A;
-            --success: #34C759;
-            --danger: #FF3B30;
-            --warning: #FF9F0A;
-            --info: #5AC8FA;
+            --text-main: #F2F2F7;
+            --text-sub: #8E8E93; /* Metallic Text */
+            
+            --primary: #0A84FF; /* iOS Blue (Dark Mode) */
+            --primary-gradient: linear-gradient(135deg, #0A84FF, #5E5CE6);
+            
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(255, 255, 255, 0.15);
+            
+            --coin: #FFD60A; /* Vivid Gold */
+            --success: #30D158;
+            --danger: #FF453A;
+            
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 20px rgba(10, 132, 255, 0.15);
+            
             --header-h: 60px;
-            --nav-h: 80px;
-            --loader-bg: #FFFFFF;
-            --loader-spinner: #007AFF;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --nav-h: 96px;
         }
 
-        /* RESET & BASE */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        input, textarea { -webkit-user-select: text !important; user-select: text !important; font-family: 'Inter', sans-serif; }
-        button, .btn, .nav-item, .side-item, .list-item, .pdf-box, .task-box { cursor: pointer; pointer-events: auto; }
-        
-        ::-webkit-scrollbar { display: none; }
-
+        /* RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { 
-            background-color: var(--bg); 
-            color: var(--text-main); 
-            width: 100vw;
-            height: 100vh; 
-            height: 100dvh; 
-            overflow: hidden;
-            display: flex; 
-            flex-direction: column; 
+            background-color: var(--bg); color: var(--text-main); 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            display: flex; flex-direction: column; 
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* APPLE TARZI YÜKLENİYOR EKRANI */
+        /* LOADER */
         #page-loader { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: var(--loader-bg);
-            z-index: 9999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            flex-direction: column;
-            color: var(--text-main);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--bg); z-index: 9999; 
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
         }
-        
-        .loader-content {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 40px 30px;
-            border-radius: 48px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02) inset;
-            text-align: center;
-            max-width: 320px;
-            width: 90%;
-            animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        .loader-ring {
+            width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 0.8s ease infinite; margin-bottom: 20px;
         }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .loader-icon-wrapper {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 24px;
-        }
-        
-        .loader-emoji {
-            font-size: 52px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: gentleBounce 2.4s infinite ease-in-out;
-            filter: drop-shadow(0 4px 8px rgba(0,122,255,0.2));
-        }
-        
-        .loader-spinner-ring {
-            width: 100px;
-            height: 100px;
-            border: 3px solid transparent;
-            border-top: 3px solid var(--loader-spinner);
-            border-right: 3px solid var(--secondary);
-            border-bottom: 3px solid var(--accent);
-            border-left: 3px solid var(--coin);
-            border-radius: 50%;
-            animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-            box-shadow: 0 0 20px rgba(0,122,255,0.2);
-        }
-        
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        
-        @keyframes gentleBounce {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -60%) scale(1.1); }
-        }
-        
-        .loader-text {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #007AFF, #5856D6, #FF2D55, #FF9F0A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .loader-sub {
-            font-size: 15px;
-            color: var(--text-sub);
-            line-height: 1.5;
-            margin-bottom: 20px;
-            font-weight: 400;
-        }
-        
-        .loader-progress-container {
-            width: 100%;
-            height: 6px;
-            background: #E5E5EA;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        
-        .loader-progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #007AFF, #5856D6, #FF2D55, #FF9F0A);
-            background-size: 200% 100%;
-            animation: progress 2s ease-in-out infinite, gradientShift 3s ease infinite;
-        }
-        
-        @keyframes progress {
-            0% { width: 0%; }
-            50% { width: 80%; }
-            100% { width: 100%; }
-        }
-        
-        /* LOADER BANNER - YENİ APPLE TARZI BANNER */
-        .loader-banner {
-            width: 100%;
-            background: linear-gradient(135deg, rgba(0,122,255,0.05), rgba(88,86,214,0.05), rgba(255,45,85,0.05));
-            border-radius: 24px;
-            padding: 16px 12px;
-            margin-top: 16px;
-            border: 1px solid rgba(255,255,255,0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            animation: fadeInUp 0.8s 0.2s both;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .banner-text {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .banner-text i {
-            font-size: 16px;
-            color: var(--coin);
-            animation: gentleBounce 2s infinite;
-        }
-        
-        .banner-badge {
-            background: var(--primary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 4px 8px rgba(0,122,255,0.2);
-        }
-        
-        /* MOTİVASYONEL MESAJLAR İÇİN KÜÇÜK KARTLAR */
-        .motivation-badge {
-            background: white;
-            border-radius: 30px;
-            padding: 8px 16px;
-            margin: 8px 0 16px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-main);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            border: 1px solid var(--glass-border);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .motivation-badge i {
-            color: var(--primary);
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* APP LAYOUT */
-        #app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        
-        #app-container.visible {
-            opacity: 1;
-        }
+        /* LAYOUT */
+        #app-container { display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; opacity: 0; transition: opacity 0.5s ease; }
+        #app-container.visible { opacity: 1; }
 
-        /* VIEWS */
         .view { 
-            flex: 1; 
-            display: none; 
-            flex-direction: column;
-            opacity: 0; 
-            transition: opacity 0.2s ease; 
-            overflow: hidden;
-            padding: 15px;
-            padding-bottom: var(--nav-h);
+            flex: 1; display: none; flex-direction: column; 
+            opacity: 0; transform: scale(0.98); 
+            transition: opacity 0.3s ease, transform 0.3s ease; 
+            padding: 20px; padding-bottom: var(--nav-h); overflow: hidden;
         }
-        .view.active { display: flex; opacity: 1; }
+        .view.active { display: flex; opacity: 1; transform: scale(1); }
+        .scroll-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 30px; }
 
-        /* SCROLLABLE AREAS */
-        .scroll-content {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 20px;
-        }
-
-        /* HEADER - Apple Style */
+        /* HEADER */
         .header { 
-            height: var(--header-h); 
-            padding: 0 15px; 
-            background: var(--bg); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-shrink: 0;
-            z-index: 10;
+            height: var(--header-h); padding: 0 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px); 
+            border-bottom: 1px solid var(--border); z-index: 10;
         }
-        .header-actions { display: none; flex-direction: row; gap: 10px; align-items: center; }
         .header-icon-btn { 
-            width: 40px; 
-            height: 40px; 
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            font-size: 18px; 
-            color: var(--primary);
-            transition: all 0.2s ease;
+            width: 40px; height: 40px; border-radius: 12px; 
+            background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; 
+            font-size: 18px; color: var(--text-main); transition: 0.2s;
         }
-        .header-icon-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
+        .header-icon-btn:active { background: var(--primary); }
 
-        /* UI COMPONENTS - Apple Style */
+        /* COMPONENTS */
         .btn { 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 14px; 
-            font-weight: 600; 
-            width: 100%; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            font-size: 14px; 
-            transition: all 0.2s ease; 
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+            background: var(--primary); color: white; border: none; 
+            padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            font-size: 16px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3); 
+            transition: 0.2s;
         }
-        .btn i { font-size: 18px; }
-        .btn:active { transform: scale(0.96); }
-        .btn-sec { background: rgba(0,122,255,0.1); color: var(--primary); box-shadow: none; }
-        .btn-dang { background: rgba(255,59,48,0.1); color: var(--danger); box-shadow: none; }
-        .btn-edit { background: rgba(255,159,10,0.1); color: #EA580C; box-shadow: none; }
-        .btn-coin { background: var(--coin); color: white; box-shadow: 0 4px 12px rgba(255,159,10,0.3); }
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
+        .btn-sec { background: rgba(255,255,255,0.1); color: var(--text-main); box-shadow: none; }
+        .btn-coin { background: var(--coin); color: black; box-shadow: 0 4px 15px rgba(255, 214, 10, 0.3); }
+
+        .inp { 
+            width: 100%; padding: 16px; border-radius: 16px; 
+            border: 1px solid var(--border); background: rgba(0,0,0,0.2); 
+            color: white; margin-bottom: 12px; font-size: 15px; outline: none;
+        }
+        .inp:focus { border-color: var(--primary); background: rgba(0,0,0,0.4); }
+
+        /* GRID SYSTEM & BANNERS */
+        .pdf-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
+        }
         
-        .inp, .txtarea { 
-            width: 100%; 
-            padding: 14px; 
-            border-radius: 14px; 
-            border: 1px solid var(--border); 
-            background: var(--white); 
-            margin-bottom: 10px; 
-            outline: none; 
-            font-size: 14px; 
-            transition: all 0.2s ease;
-        }
-        .inp:focus, .txtarea:focus { 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 4px rgba(0,122,255,0.1);
+        .grid-banner-row {
+            grid-column: span 2; /* Tüm satırı kapla */
+            width: 100%;
+            margin: 10px 0;
+            background: transparent;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex; justify-content: center;
         }
 
-        /* TASK BOX - Apple Style */
-        .task-box { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 16px; 
-            border-radius: 20px; 
-            border: 1px solid var(--glass-border); 
-            margin-bottom: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        .pdf-box { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 10px; 
+            display: flex; flex-direction: column; align-items: center; 
+            position: relative; overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
-        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .task-reward { 
-            background: rgba(255,159,10,0.1); 
-            color: var(--coin); 
-            padding: 6px 12px; 
-            border-radius: 30px; 
-            font-weight: 600; 
-            font-size: 12px; 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
+        .pdf-box:active { border-color: var(--primary); background: #252525; }
+
+        .pdf-cover {
+            width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 14px;
+            background: #2C2C2E; margin-bottom: 10px;
         }
-        .task-reward i { 
-            color: var(--coin); 
-            font-size: 14px; 
+        .pdf-thumb {
+            width: 100%; aspect-ratio: 2/3; border-radius: 14px;
+            background: linear-gradient(45deg, #2C2C2E, #3A3A3C);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: var(--text-sub); margin-bottom: 10px;
         }
 
-        /* NAV BAR - Apple Style */
+        .pdf-title { 
+            font-size: 13px; font-weight: 600; text-align: left; width: 100%;
+            color: var(--text-main); margin-bottom: 6px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 32px;
+        }
+        
+        .pdf-info {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; color: var(--text-sub); border-top: 1px solid var(--border); padding-top: 8px;
+        }
+        
+        /* BANNER WRAPPERS */
+        .ad-banner-wrapper {
+            width: 100%; min-height: 90px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px; margin: 15px 0;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1px dashed rgba(255,255,255,0.1);
+        }
+        .adbits-container iframe { width: 100% !important; height: 90px !important; border:none; }
+
+        /* NAVIGATION */
         .nav-container { 
-            position: fixed; 
-            bottom: 15px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 92%; 
-            max-width: 400px; 
-            z-index: 1000; 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 400px; z-index: 1000; 
         }
         .nav { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 40px; 
-            display: flex; 
-            justify-content: space-around; 
-            padding: 8px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            border: 1px solid var(--glass-border); 
+            background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(25px);
+            border-radius: 24px; display: flex; justify-content: space-around; 
+            padding: 12px 0; border: 1px solid var(--border-highlight);
+            box-shadow: var(--shadow-md);
         }
         .nav-item { 
-            font-size: 22px; 
-            color: var(--text-sub); 
-            transition: all 0.2s ease; 
-            width: 48px; 
-            height: 48px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 30px; 
+            font-size: 22px; color: var(--text-sub); width: 50px; height: 50px; 
+            display: flex; align-items: center; justify-content: center; border-radius: 16px; 
+            transition: 0.3s;
         }
         .nav-item.active { 
-            color: white; 
-            background: var(--primary); 
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
+            color: var(--white); background: rgba(255,255,255,0.1); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateY(-5px);
         }
 
-        /* PDF GRID - Apple Style */
-        .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 10px; }
-        .pdf-box { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 14px 10px; 
-            border-radius: 20px; 
-            text-align: center; 
-            border: 1px solid var(--glass-border); 
-            height: 200px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-            transition: all 0.2s ease; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-        .pdf-box:active { transform: scale(0.97); border-color: var(--primary); }
-        .pdf-thumb { 
-            width: 48px; 
-            height: 48px; 
-            background: rgba(0,122,255,0.1); 
-            border-radius: 16px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: var(--primary); 
-            font-size: 24px; 
-            margin-bottom: 10px; 
-            box-shadow: 0 4px 8px rgba(0,122,255,0.1);
-        }
-        .pdf-cover-img { 
-            width: 65px; 
-            height: 90px; 
-            object-fit: cover; 
-            border-radius: 12px; 
-            margin-bottom: 8px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1); 
-        }
-        .pdf-title { 
-            font-weight: 600; 
-            font-size: 13px; 
-            overflow: hidden; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical; 
-            line-height: 1.3; 
-            margin-bottom: 6px; 
-        }
-        .pdf-price { 
-            color: var(--coin); 
-            font-weight: 600; 
-            font-size: 12px; 
-            margin-top: 4px; 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
-            justify-content: center; 
-            background: rgba(255,159,10,0.1);
-            padding: 4px 10px;
-            border-radius: 30px;
-        }
-        .pdf-price i { 
-            color: var(--coin); 
-        }
-        .pdf-info { 
-            width: 100%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            font-size: 10px; 
-            color: var(--text-sub); 
-            border-top: 1px solid rgba(0,0,0,0.05); 
-            padding-top: 8px; 
-            margin-top: auto; 
-        }
-        .pdf-info i { 
-            color: var(--text-sub); 
-        }
-
-        /* AD BANNER WRAPPERS - RENK DEĞİŞTİREN KENARLIK EKLENDİ */
-        .ad-banner-wrapper {
-            width: 100%;
-            min-height: 90px;
-            background: transparent;
-            border-radius: 16px;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-            animation: borderGlow 3s infinite alternate;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            box-shadow: 0 0 15px rgba(0,122,255,0.2);
-        }
-        
-        @keyframes borderGlow {
-            0% { border-color: #007AFF; box-shadow: 0 0 10px rgba(0,122,255,0.3); }
-            25% { border-color: #5856D6; box-shadow: 0 0 15px rgba(88,86,214,0.4); }
-            50% { border-color: #FF2D55; box-shadow: 0 0 10px rgba(255,45,85,0.3); }
-            75% { border-color: #FF9F0A; box-shadow: 0 0 15px rgba(255,159,10,0.4); }
-            100% { border-color: #34C759; box-shadow: 0 0 10px rgba(52,199,89,0.3); }
-        }
-        
-        .ad-banner-wrapper::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(90deg, #007AFF, #5856D6, #FF2D55, #FF9F0A, #34C759);
-            border-radius: 18px;
-            z-index: -1;
-            animation: rotateGradient 6s linear infinite;
-            opacity: 0.6;
-        }
-        
-        @keyframes rotateGradient {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-        
-        /* MONETAG BANNER */
-        .monetag-banner {
-            width: 100%;
-            min-height: 90px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            background: white;
-        }
-        
-        .monetag-banner > div {
-            width: 100%;
-            height: 100%;
-            min-height: 90px;
-            z-index: 2;
-            position: relative;
-        }
-        
-        /* ADBITS BANNER */
-        .adbits-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: transparent;
-            border-radius: 14px;
-            min-height: 90px;
-            overflow: hidden;
-        }
-        
-        .adbits-container iframe {
-            max-width: 100%;
-            width: 100% !important;
-            height: 90px !important;
-            border: none;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-        
-        /* Yedek banner stili */
-        .backup-banner {
-            width: 100%;
-            display: none;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f0 100%);
-            border-radius: 14px;
-            min-height: 90px;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-sub);
-            font-size: 14px;
-            border: 1px dashed var(--border);
-        }
-
-        /* MODALS - Apple Style */
+        /* MODALS */
         .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.4); 
-            z-index: 3000; 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-            opacity: 0; 
-            transition: opacity 0.3s ease; 
-        }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-box { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            width: 90%; 
-            max-width: 360px; 
-            border-radius: 44px; 
-            padding: 24px; 
-            text-align: center; 
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.2); 
-            transform: scale(0.9) translateY(20px); 
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            max-height: 85vh; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
-
-        /* LIST ITEMS - Apple Style */
-        .list-item { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 14px; 
-            border-radius: 18px; 
-            margin-bottom: 8px; 
-            border: 1px solid var(--glass-border); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            font-size: 13px; 
-            transition: all 0.2s ease;
-        }
-        .list-item:active { background: rgba(0,122,255,0.05); border-color: var(--primary); }
-        .list-item i { color: var(--primary); }
-        
-        .notif-item { 
-            background: rgba(254,249,195,0.3);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); z-index: 2000; 
+            display: none; align-items: center; justify-content: center; 
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: #854D0E; 
-            padding: 16px; 
-            border-radius: 18px; 
-            margin-bottom: 8px; 
-            text-align: left; 
-            font-size: 13px; 
-            border: 1px solid rgba(254,240,138,0.3); 
         }
-        .notif-item i { 
-            color: #F59E0B; 
-            margin-right: 6px; 
+        .modal-box { 
+            background: var(--modal-bg); width: 90%; max-width: 360px; 
+            border-radius: 28px; padding: 24px; text-align: center; 
+            border: 1px solid var(--border-highlight);
+            box-shadow: var(--shadow-md); transform: scale(0.9); transition: 0.3s;
         }
-        
-        /* SIDEBAR - Apple Style */
-        .sidebar-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.3); 
-            z-index: 1500; 
-            display: none; 
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-        .sidebar { 
-            position: fixed; 
-            top: 0; 
-            left: -280px; 
-            width: 280px; 
-            height: 100%; 
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            z-index: 1600; 
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            padding: 30px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            border-right: 1px solid var(--glass-border);
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
-        }
-        .sidebar.open { left: 0; }
-        .side-item { 
-            padding: 14px; 
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-            font-weight: 500; 
-            color: var(--text-main); 
-            margin-bottom: 6px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            transition: all 0.2s ease;
-        }
-        .side-item:active { background: rgba(0,122,255,0.1); color: var(--primary); transform: translateX(4px); }
-        .side-item i { font-size: 20px; width: 28px; color: var(--primary); }
+        .modal-overlay.active { display: flex; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
 
-        /* HOME CARD - Apple Style */
-        .home-card { 
-            background: linear-gradient(135deg, #007AFF, #5856D6, #FF2D55); 
-            color: white; 
-            border-radius: 30px; 
-            padding: 24px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 20px 30px rgba(0,122,255,0.2); 
-            flex-shrink: 0; 
-            position: relative;
-            overflow: hidden;
+        /* DESIGNER BADGE */
+        .designer-badge {
+            margin-top: 20px; padding: 10px; border-radius: 12px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
         }
-        
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .cat-item { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px; 
-            padding: 14px; 
-            border: 1px solid var(--glass-border); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        .designer-text {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-sub);
         }
-        .cat-item:active { transform: translateY(-4px); border-color: var(--primary); }
-        .cat-icon { 
-            width: 48px; 
-            height: 48px; 
-            background: rgba(0,122,255,0.1); 
-            border-radius: 18px; 
-            color: var(--primary); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 24px; 
-            box-shadow: 0 4px 8px rgba(0,122,255,0.1);
+        .designer-name {
+            font-size: 14px; font-weight: 700; background: linear-gradient(to right, #fff, #888); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 4px;
         }
 
-        /* TOAST - Apple Style */
-        #toast-container { 
-            position: fixed; 
-            top: 20px; 
-            left: 0; 
-            width: 100%; 
-            z-index: 9999; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            pointer-events: none; 
-        }
-        .toast { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            color: var(--text-main); 
-            padding: 14px 24px; 
-            border-radius: 40px; 
-            margin-bottom: 10px; 
-            font-size: 14px; 
-            font-weight: 500; 
-            animation: slideDown 0.4s; 
-            pointer-events: auto; 
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .toast i { margin-right: 8px; font-size: 16px; color: inherit; }
-        .toast.error { background: rgba(255,59,48,0.9); color: white; }
-        .toast.success { background: rgba(52,199,89,0.9); color: white; }
-        .toast.hiding { animation: slideUp 0.4s forwards; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { to { opacity: 0; transform: translateY(-20px); } }
-
-        /* STATS GRID */
-        .stats-grid i { 
-            color: var(--primary); 
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 24px; border-radius: 30px;
+            font-size: 14px; z-index: 5000; border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* MODAL İÇİ BANNER */
-        .modal-banner {
-            margin: 15px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            animation: borderGlow 3s infinite alternate;
-            border: 2px solid transparent;
+        /* HOME CARD */
+        .home-card {
+            background: linear-gradient(160deg, #1C1C1E, #000);
+            border: 1px solid var(--border-highlight);
+            border-radius: 24px; padding: 24px; margin-bottom: 20px;
+            position: relative; overflow: hidden;
+        }
+        .home-card::after {
+            content: ''; position: absolute; top: -50%; right: -50%; width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(10,132,255,0.2), transparent 70%);
+            pointer-events: none;
         }
 
     </style>
@@ -840,415 +251,225 @@
 
     <div id="toast-container"></div>
 
-    <!-- APPLE TARZI YÜKLENİYOR EKRANI - BANNER EKLENDİ -->
+    <!-- LOADER -->
     <div id="page-loader">
-        <div class="loader-content">
-            <div class="loader-icon-wrapper">
-                <div class="loader-spinner-ring"></div>
-                <div class="loader-emoji" id="loader-emoji">📚</div>
-            </div>
-            <div class="loader-text" id="loader-text">Bilgi Hazinesi</div>
-            <div class="loader-sub" id="loader-sub">Kitaplar yükleniyor...</div>
-            
-            <!-- MOTİVASYON BADGE - İKON DÜZELTİLDİ -->
-            <div class="motivation-badge" id="motivation-badge">
-                <i class="fa-regular fa-star" style="color: #FF9F0A;"></i>
-                <span id="motivation-text">Her kitap yeni bir dünya</span>
-            </div>
-            
-            <div class="loader-progress-container">
-                <div class="loader-progress-bar" id="loader-progress"></div>
-            </div>
-            
-            <!-- YÜKLENİYOR EKRANI BANNER -->
-            <div class="loader-banner" id="loader-banner">
-                <span class="banner-text">
-                    <i class="fa-regular fa-bolt" style="color: #FF9F0A;"></i> Bugün 50+ öğrenci katıldı!
-                </span>
-                <span class="banner-badge">
-                    <i class="fa-regular fa-coins" style="color: #FFD700;"></i> 5000+ jeton dağıtıldı
-                </span>
-            </div>
-            
-            <!-- LOADER BANNER REKLAM ALANI - YENİ -->
-            <div class="ad-banner-wrapper" style="margin-top: 20px;">
-                <div class="adbits-container" id="adbits-loader">
-                    <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
-                </div>
-            </div>
-        </div>
+        <div class="loader-ring"></div>
+        <div style="font-weight: 800; font-size: 24px; letter-spacing: -1px;">BATIDAO</div>
+        <div style="color: var(--text-sub); font-size: 12px; margin-top: 5px;">AlperenTHE Designer</div>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
     <div id="app-container">
         
         <!-- SIDEBAR -->
-        <div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar(false)"></div>
-        <div class="sidebar" id="sidebar">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px;">
-                <i class="fa-solid fa-book-open" style="font-size: 32px; color: var(--primary);"></i>
-                <h3 style="color: var(--primary); font-size: 20px;">Kategoriler</h3>
-            </div>
-            <div style="flex:1; overflow-y: auto;" id="sb-list"></div>
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--glass-border); text-align: center; font-size: 12px; color: var(--text-sub);">
-                <i class="fa-regular fa-copyright"></i> @BatidaoDeneme_Bot
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1400; display:none;" id="sb-overlay" onclick="toggleSidebar(false)"></div>
+        <div id="sidebar" style="position:fixed; top:0; left:-280px; width:280px; height:100%; background: #151515; z-index:1500; transition:0.4s; padding: 30px 20px; border-right:1px solid var(--border);">
+            <h2 style="margin-bottom: 20px; color: var(--white);">Kategoriler</h2>
+            <div id="sb-list" style="overflow-y:auto; height: calc(100% - 100px);"></div>
+            
+            <div class="designer-badge">
+                <div class="designer-text">DEVELOPED BY</div>
+                <div class="designer-name">AlperenTHE Designer</div>
             </div>
         </div>
 
         <!-- HEADER -->
         <div class="header">
             <div>
-                <div style="font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;">
-                    <i class="fa-regular fa-circle-check" style="color: var(--success);"></i> @BatidaoDeneme_Bot
-                </div>
-                <div style="font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 6px;" id="u-name">
-                    <i class="fa-regular fa-user" style="font-size: 14px; color: var(--primary);"></i> Kullanıcı
-                </div>
+                <div style="font-size: 11px; color: var(--text-sub);">Hoş Geldin</div>
+                <div style="font-size: 18px; font-weight: 700;" id="u-name">Misafir</div>
             </div>
-            <div class="header-actions" id="header-actions">
-                <div class="header-icon-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars-staggered"></i></div>
-                <div class="header-icon-btn" onclick="openModal('m-history'); renderHistory();"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div style="display:flex; gap:10px;">
+                <div class="header-icon-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></div>
             </div>
         </div>
 
-        <!-- 1. HOME VIEW -->
+        <!-- VIEW: HOME -->
         <div id="v-home" class="view active">
             <div class="scroll-content">
                 <div class="home-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                    <h2 style="font-size:24px; margin-bottom:5px;">İyi Günler! 👋</h2>
+                    <p style="color:var(--text-sub); margin-bottom:20px; font-size:14px;">Bugün hedeflerine ulaşmak için harika bir gün.</p>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:15px; border-radius:16px;">
                         <div>
-                            <h3 style="font-size: 20px; margin-bottom: 4px;">Hoş Geldin! 👋</h3>
-                            <p style="font-size: 13px; opacity: 0.9;">Bugün ne öğrenmek istersin?</p>
+                            <div style="font-size:10px; color:var(--text-sub);">BAKİYE</div>
+                            <div style="font-size:28px; font-weight:800;" id="home-balance">0</div>
                         </div>
-                        <div style="text-align: right; background: rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 20px; backdrop-filter: blur(4px);">
-                            <div style="font-size: 10px; opacity: 0.9;">BAKİYE</div>
-                            <div style="font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                                <i class="fa-solid fa-coins" style="color: #FCD34D;"></i> 
-                                <span id="home-balance">0</span>
-                            </div>
+                        <div style="width:45px; height:45px; border-radius:50%; background:var(--coin); display:flex; align-items:center; justify-content:center; color:black; font-size:20px;">
+                            <i class="fa-solid fa-coins"></i>
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 20px; position: relative; z-index: 1;">
-                        <button class="btn" style="background: var(--white); color: var(--primary); width: auto; padding: 12px 20px; font-size: 13px; flex: 1;" onclick="go('pdfs', document.querySelectorAll('.nav-item')[1])">
-                            <i class="fa-solid fa-book-open"></i> Kütüphane
-                        </button>
-                        <button class="btn" style="background: rgba(255,255,255,0.2); color: white; width: auto; padding: 12px 20px; font-size: 13px; flex: 1;" onclick="openModal('m-req-user')">
-                            <i class="fa-solid fa-plus-circle"></i> PDF İste
-                        </button>
                     </div>
                 </div>
 
-                <!-- BANNER HOME - ADBITS.ONLINE (ANA BANNER) -->
+                <!-- REKLAM ALANI 1 -->
                 <div class="ad-banner-wrapper">
-                    <div class="adbits-container" id="adbits-home">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true"></iframe>
                     </div>
                 </div>
 
-                <!-- YEDEK BANNER (Monetag) - Gerektiğinde gösterilecek -->
-                <div class="ad-banner-wrapper" style="display: none;" id="backup-banner-home">
-                    <div class="monetag-banner">
-                        <div id="monetag-zone-10637714-home"></div>
-                    </div>
-                </div>
-
-                <h4 style="margin-bottom: 15px; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-bolt" style="color: var(--coin);"></i> Hızlı Erişim
-                </h4>
-                <div class="cat-grid" id="home-cat-grid"></div>
+                <div style="font-weight:700; margin-bottom:15px; color:var(--white);">Hızlı Erişim</div>
+                <div id="home-cat-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
             </div>
         </div>
 
-        <!-- 2. PDFS VIEW -->
+        <!-- VIEW: PDFS (KÜTÜPHANE) -->
         <div id="v-pdfs" class="view">
-            <!-- Fixed Elements -->
-            <div style="flex-shrink: 0;">
-                <h2 style="margin-bottom: 15px; font-size: 20px; display: flex; align-items: center; gap: 8px;" id="lib-title">
-                    <i class="fa-solid fa-book-open" style="color: var(--primary);"></i> Tüm Kitaplar
-                </h2>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px;">
-                    <div style="position: relative; flex: 1;">
-                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14px;"></i>
-                        <input class="inp" style="margin-bottom:0; padding-left: 40px;" placeholder="Ara..." id="search" oninput="renderPdfs('all')">
-                    </div>
-                    <div style="font-weight: 600; color: var(--coin); white-space: nowrap; font-size: 16px; background: rgba(255,159,10,0.1); padding: 8px 15px; border-radius: 30px;">
-                        <i class="fa-solid fa-coins" style="color: var(--coin);"></i> <span id="lib-balance">0</span>
-                    </div>
-                </div>
+            <div style="margin-bottom:15px;">
+                <h2 style="font-weight:800; font-size:26px; margin-bottom:10px;" id="lib-title">Kütüphane</h2>
+                <input class="inp" placeholder="Kitap ara..." id="search" oninput="renderPdfs('all')">
             </div>
+            
+            <div class="scroll-content">
+                <!-- ÜST BANNER -->
+                <div class="ad-banner-wrapper" style="margin-top:0;">
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true"></iframe>
+                    </div>
+                </div>
 
-            <!-- Scrollable List -->
-            <div class="scroll-content" id="pdf-list-scroll">
+                <div id="pdf-list" class="pdf-grid"></div>
                 
-                <!-- TOP BANNER - ADBITS -->
+                <!-- ALT BANNER -->
                 <div class="ad-banner-wrapper">
-                    <div class="adbits-container" id="adbits-pdfs-top">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
-                    </div>
-                </div>
-
-                <div id="pdf-list" class="pdf-grid">
-                    <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-sub);">
-                        <i class="fa-solid fa-spinner fa-spin-pulse" style="font-size: 30px; margin-bottom: 10px; color: var(--primary);"></i>
-                        <br>Yükleniyor...
-                    </div>
-                </div>
-
-                <!-- BOTTOM BANNER - ADBITS -->
-                <div class="ad-banner-wrapper" style="margin-top:15px;">
-                    <div class="adbits-container" id="adbits-pdfs-bottom">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true"></iframe>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. EARN VIEW -->
+        <!-- VIEW: EARN -->
         <div id="v-earn" class="view">
             <div class="scroll-content">
-                <h2 style="margin-bottom: 15px; color: var(--coin); font-size: 22px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-coins" style="color: var(--coin);"></i> Jeton Kazan
-                </h2>
+                <h2 style="font-weight:800; font-size:28px; margin-bottom:20px; color:var(--coin);">Kazan</h2>
                 
-                <div style="background: rgba(255,159,10,0.1); backdrop-filter: blur(20px); padding: 20px; border-radius: 30px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(255,159,10,0.2); box-shadow: 0 10px 20px rgba(255,159,10,0.1);">
-                    <div style="font-size: 12px; color: #92400E; margin-bottom: 5px;">MEVCUT BAKİYEN</div>
-                    <div style="font-size: 42px; font-weight: 600; color: var(--coin); display: flex; align-items: center; justify-content: center; gap: 8px;" id="earn-balance">
-                        0 <i class="fa-solid fa-coins" style="font-size: 32px; color: var(--coin);"></i>
-                    </div>
+                <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:24px; padding:30px; text-align:center; margin-bottom:20px;">
+                    <div style="font-size:50px; color:var(--coin); margin-bottom:10px;"><i class="fa-solid fa-coins"></i></div>
+                    <div style="font-size:40px; font-weight:800;" id="earn-balance">0</div>
+                    <div style="color:var(--text-sub); font-size:12px;">MEVCUT BAKİYE</div>
                 </div>
-                
-                <div class="task-box">
-                    <div class="task-header">
-                        <div style="font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-play-circle" style="color: var(--primary);"></i> Ödüllü Reklam İzle
-                        </div>
-                        <div class="task-reward">
-                            <i class="fa-solid fa-coins"></i> Her biri +1
-                        </div>
+
+                <div style="background:var(--card-bg); padding:20px; border-radius:20px; border:1px solid var(--border-highlight);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <h3 style="font-size:16px;">Reklam İzle</h3>
+                        <span style="background:rgba(48, 209, 88, 0.2); color:var(--success); padding:4px 8px; border-radius:8px; font-size:12px;">+1 Jeton</span>
                     </div>
-                    <div style="font-size: 12px; margin-bottom: 15px; color: var(--text-sub); display: flex; align-items: center; gap: 4px;">
-                        <i class="fa-regular fa-circle-info" style="color: var(--info);"></i> Kaç adet izlemek istiyorsun?
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="number" id="ad-loop-count" class="inp" placeholder="Adet" style="margin-bottom:0; width: 100px; text-align: center;" value="1" min="1" max="100">
-                        <button class="btn btn-sec" style="width: auto; flex: 1;" onclick="watchRewardedAd()">
-                            <i class="fa-solid fa-play" style="color: var(--primary);"></i> Başlat
-                        </button>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Kısa video izle ve hemen kazan.</p>
+                    
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="ad-loop-count" class="inp" placeholder="Adet" style="width:80px; margin:0; text-align:center;" value="1">
+                        <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">BAŞLAT</button>
                     </div>
                 </div>
 
-                <!-- BANNER EARN - ADBITS -->
+                <!-- REKLAM -->
                 <div class="ad-banner-wrapper">
-                    <div class="adbits-container" id="adbits-earn">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true"></iframe>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 4. PROFILE VIEW -->
+        <!-- VIEW: PROFILE -->
         <div id="v-profile" class="view">
             <div class="scroll-content">
-                <div class="profile-container" style="text-align: center; margin-bottom: 20px;">
-                    <div id="u-avatar-box" style="width: 100px; height: 100px; border-radius: 30px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); display: flex; align-items: center; justify-content: center; font-size: 42px; color: var(--primary); overflow: hidden; box-shadow: 0 20px 30px rgba(0,122,255,0.2); margin: 10px auto; border: 3px solid white;">
-                        <i class="fa-solid fa-user-astronaut" style="color: var(--primary);"></i>
+                <div style="text-align:center; margin-top:20px; margin-bottom:30px;">
+                    <div id="u-avatar-box" style="width:100px; height:100px; border-radius:50%; background:#333; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:40px; overflow:hidden;">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    <h3 style="margin-top: 10px; font-size: 22px; font-weight: 600;" id="profile-name">
-                        <i class="fa-regular fa-user" style="color: var(--primary);"></i> Profilim
-                    </h3>
-                </div>
-                
-                <div style="background: var(--glass-bg); backdrop-filter: blur(20px); padding: 20px; border-radius: 30px; text-align: center; border: 1px solid var(--glass-border); margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                    <div style="font-size: 32px; font-weight: 600; color: var(--coin); display: flex; align-items: center; justify-content: center; gap: 8px;" id="profile-balance">
-                        0 <i class="fa-solid fa-coins" style="color: var(--coin);"></i>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-sub);">Jeton Bakiyesi</div>
+                    <h2 id="profile-name">Kullanıcı</h2>
+                    <div style="color:var(--text-sub); font-size:13px;">Pro Üyelik</div>
                 </div>
 
-                <!-- BANNER PROFILE - ADBITS -->
-                <div class="ad-banner-wrapper">
-                    <div class="adbits-container" id="adbits-profile">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
+                <div style="background:var(--card-bg); border-radius:20px; overflow:hidden; border:1px solid var(--border);">
+                    <div onclick="openModal('m-req-user')" style="padding:15px; display:flex; align-items:center; border-bottom:1px solid var(--border);">
+                        <i class="fa-solid fa-paper-plane" style="width:30px; color:var(--primary);"></i>
+                        <div style="flex:1;">PDF İste</div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
+                    </div>
+                    <div onclick="openModal('m-user-notifs')" style="padding:15px; display:flex; align-items:center;">
+                        <i class="fa-solid fa-bell" style="width:30px; color:var(--coin);"></i>
+                        <div style="flex:1;">Duyurular</div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                     </div>
                 </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div class="side-item" onclick="openModal('m-req-user')" style="background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px;">
-                        <i class="fa-solid fa-bullhorn" style="color: var(--primary);"></i> 
-                        <div style="flex: 1;">PDF İste</div>
-                        <i class="fa-solid fa-chevron-right" style="color: var(--text-sub);"></i>
-                    </div>
-                    <div class="side-item" onclick="openModal('m-user-notifs')" style="background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px;">
-                        <i class="fa-solid fa-bell" style="color: #F59E0B;"></i> 
-                        <div style="flex: 1;">Duyurular</div>
-                        <i class="fa-solid fa-chevron-right" style="color: var(--text-sub);"></i>
-                    </div>
+
+                <div class="designer-badge" style="margin-top:40px;">
+                    <div class="designer-text">DESIGNED BY</div>
+                    <div class="designer-name">AlperenTHE Designer</div>
                 </div>
             </div>
         </div>
 
-        <!-- 5. ADMIN VIEW -->
+        <!-- ADMIN -->
         <div id="v-admin" class="view">
             <div class="scroll-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary); font-size: 22px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Yönetici Paneli
-                </h2>
-                
-                <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-                    <div style="background: var(--glass-bg); backdrop-filter: blur(20px); padding: 20px; border-radius: 24px; text-align: center; border: 1px solid var(--glass-border);">
-                        <i class="fa-solid fa-users" style="font-size: 24px; color: var(--primary); margin-bottom: 8px;"></i>
-                        <div style="font-size: 28px; font-weight: 600;" id="st-users">0</div>
-                        <div style="font-size: 12px; color: var(--text-sub);">Kullanıcı</div>
-                    </div>
-                    <div style="background: var(--glass-bg); backdrop-filter: blur(20px); padding: 20px; border-radius: 24px; text-align: center; border: 1px solid var(--glass-border);">
-                        <i class="fa-solid fa-user-check" style="font-size: 24px; color: var(--success); margin-bottom: 8px;"></i>
-                        <div style="font-size: 28px; font-weight: 600;" id="st-active-users">0</div>
-                        <div style="font-size: 12px; color: var(--text-sub);">Aktif</div>
-                    </div>
+                <h2>Admin</h2>
+                <div style="text-align:center; padding:30px; border:1px solid var(--border); border-radius:20px; margin:20px 0;">
+                    <div style="font-size:40px;" id="st-users">0</div>
+                    <div style="font-size:12px; color:var(--text-sub);">KULLANICI</div>
                 </div>
-                
-                <div style="display: grid; gap: 10px;">
-                    <button class="btn btn-sec" onclick="openModal('m-pdf')">
-                        <i class="fa-solid fa-file-pdf" style="color: var(--primary);"></i> PDF Yönet
-                    </button>
-                    <button class="btn btn-sec" onclick="openModal('m-users')">
-                        <i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> Kullanıcılar
-                    </button>
-                    <button class="btn btn-sec" onclick="openModal('m-reqs')">
-                        <i class="fa-solid fa-circle-exclamation" style="color: var(--primary);"></i> İstekler
-                    </button>
-                    <button class="btn btn-sec" onclick="openModal('m-add-notif')">
-                        <i class="fa-solid fa-bullhorn" style="color: var(--primary);"></i> Duyurular
-                    </button>
-                </div>
+                <button class="btn btn-sec" onclick="openModal('m-pdf')" style="margin-bottom:10px;">PDF Ekle</button>
+                <button class="btn btn-sec" onclick="openModal('m-users')" style="margin-bottom:10px;">Kullanıcılar</button>
+                <button class="btn btn-sec" onclick="openModal('m-add-notif')">Duyuru</button>
             </div>
         </div>
 
         <!-- MODALS -->
-        <!-- UNLOCK MODAL -->
+        <!-- UNLOCK MODAL - BOL REKLAMLI -->
         <div id="m-unlock" class="modal-overlay">
             <div class="modal-box">
-                <div style="font-size: 50px; color: var(--coin); margin: 10px 0;">
-                    <i class="fa-solid fa-lock" style="color: var(--coin);"></i>
+                <div style="width:60px; height:60px; background:rgba(255,214,10,0.2); border-radius:50%; color:var(--coin); display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:24px;">
+                    <i class="fa-solid fa-lock-open"></i>
                 </div>
-                <h3 style="margin-bottom: 10px;">PDF Kilidi</h3>
-                <p id="unlock-msg" style="font-size: 14px; color: var(--text-sub); margin-bottom: 20px;">Bu kitabı açmak için X jeton gerekiyor.</p>
-                
-                <!-- BANNER IN MODAL - ADBITS -->
-                <div class="ad-banner-wrapper modal-banner">
-                    <div class="adbits-container" id="adbits-unlock">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
+                <h3>Kilidi Aç</h3>
+                <p id="unlock-msg" style="color:var(--text-sub); font-size:14px; margin-bottom:15px;"></p>
+
+                <!-- MODAL ÜST REKLAM -->
+                <div class="ad-banner-wrapper" style="min-height:60px;">
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true" style="height:60px !important;"></iframe>
                     </div>
                 </div>
 
-                <button class="btn btn-coin" id="btn-unlock-pdf" style="margin-top: 15px;">
-                    <i class="fa-solid fa-unlock"></i> Kilidi Aç
-                </button>
-                <button class="btn btn-sec" style="margin-top: 8px;" onclick="closeM()">
-                    <i class="fa-solid fa-xmark"></i> Vazgeç
-                </button>
+                <button class="btn btn-coin" id="btn-unlock-pdf">Kilidi Aç</button>
+                <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Vazgeç</button>
+                
+                <!-- MODAL ALT REKLAM -->
+                <div class="ad-banner-wrapper" style="margin-bottom:0;">
+                    <div class="adbits-container">
+                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- DİĞER MODALLAR -->
-        <div id="m-history" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Geçmiş</h3>
-                <div id="history-list" style="max-height:300px; overflow-y:auto; margin:10px 0;"></div>
-                <button class="btn btn-dang" onclick="clearHistory()">Temizle</button>
-                <button class="btn btn-sec" onclick="closeM()">Kapat</button>
-            </div>
-        </div>
+        <!-- OTHER MODALS (Standart) -->
+        <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek Yap</h3><input id="req-txt" class="inp" placeholder="Kitap Adı"><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Kapat</button></div></div>
+        <div id="m-user-notifs" class="modal-overlay"><div class="modal-box"><h3>Duyurular</h3><div id="user-notif-list"></div><button class="btn btn-sec" onclick="closeM()">Kapat</button></div></div>
         
-        <div id="m-user-notifs" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-bell" style="color: #F59E0B;"></i> Duyurular</h3>
-                <div id="user-notif-list" style="max-height:300px; overflow-y:auto; margin:10px 0;"></div>
-                <button class="btn btn-sec" onclick="closeM()">Kapat</button>
-            </div>
-        </div>
-        
-        <div id="m-pdf" class="modal-overlay">
-            <div class="modal-box">
-                <h3 id="pdf-modal-title"><i class="fa-solid fa-file-pdf" style="color: var(--primary);"></i> PDF Ekle</h3>
-                <div style="overflow-y:auto; max-height:60vh;">
-                    <input id="ap-l" class="inp" placeholder="PDF Linki">
-                    <input id="ap-n" class="inp" placeholder="Kitap Adı">
-                    <input id="ap-img" class="inp" placeholder="Görsel Linki">
-                    <input id="ap-c" class="inp" placeholder="Kategori">
-                    <input id="ap-cost" class="inp" type="number" placeholder="Ücret" value="5">
-                    <button class="btn" id="btn-save-pdf" onclick="savePdf()"><i class="fa-solid fa-plus"></i> Ekle</button>
-                    <div id="edit-cancel-box" style="display:none;">
-                        <button class="btn btn-sec" onclick="resetPdfForm()"><i class="fa-solid fa-xmark"></i> Vazgeç</button>
-                    </div>
-                </div>
-                <button class="btn btn-sec" onclick="closeM()"><i class="fa-solid fa-xmark"></i> Kapat</button>
-            </div>
-        </div>
-        
-        <div id="m-users" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> Kullanıcılar</h3>
-                <input class="inp" placeholder="Ara..." oninput="renderUsers(this.value)">
-                <div id="adm-user-list" style="max-height:200px; overflow-y:auto;"></div>
-                <button class="btn btn-sec" onclick="closeM()"><i class="fa-solid fa-xmark"></i> Kapat</button>
-            </div>
-        </div>
-        
-        <div id="m-reqs" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-circle-exclamation" style="color: var(--warning);"></i> İstekler</h3>
-                <div id="adm-req-list" style="max-height:200px; overflow-y:auto;"></div>
-                <button class="btn btn-sec" onclick="closeM()"><i class="fa-solid fa-xmark"></i> Kapat</button>
-            </div>
-        </div>
-        
-        <div id="m-add-notif" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-bullhorn" style="color: var(--primary);"></i> Duyuru Yönet</h3>
-                <textarea id="notif-txt" class="txtarea" placeholder="Duyuru..."></textarea>
-                <button class="btn" onclick="sendNotification()"><i class="fa-solid fa-paper-plane"></i> Yayınla</button>
-                <button class="btn btn-sec" onclick="closeM()"><i class="fa-solid fa-xmark"></i> Kapat</button>
-            </div>
-        </div>
-        
-        <div id="m-req-user" class="modal-overlay">
-            <div class="modal-box">
-                <h3><i class="fa-solid fa-plus-circle" style="color: var(--primary);"></i> PDF İste</h3>
-                <input id="req-txt" class="inp" placeholder="PDF Adı">
-                
-                <!-- PDF İSTE MODALINDA BANNER REKLAM - YENİ -->
-                <div class="ad-banner-wrapper modal-banner">
-                    <div class="adbits-container" id="adbits-req-modal">
-                        <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" style="width:728px; height:90px; border:0px; padding:0; overflow:hidden" allowtransparency="true"></iframe>
-                    </div>
-                </div>
-                
-                <button class="btn" onclick="sendReq()"><i class="fa-solid fa-paper-plane"></i> Gönder</button>
-                <button class="btn btn-sec" onclick="closeM()"><i class="fa-solid fa-xmark"></i> İptal</button>
-            </div>
-        </div>
+        <!-- ADMIN MODALS -->
+        <div id="m-pdf" class="modal-overlay"><div class="modal-box"><h3>PDF Ekle</h3><div style="overflow-y:auto; max-height:50vh; margin:10px 0;"><input id="ap-l" class="inp" placeholder="Link"><input id="ap-n" class="inp" placeholder="Ad"><input id="ap-img" class="inp" placeholder="Resim"><input id="ap-c" class="inp" placeholder="Kat"><input id="ap-cost" class="inp" value="5"></div><button class="btn" onclick="savePdf()">Kaydet</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Kapat</button></div></div>
+        <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" style="height:200px; overflow-y:auto;"></div><button class="btn btn-sec" onclick="closeM()">Kapat</button></div></div>
+        <div id="m-add-notif" class="modal-overlay"><div class="modal-box"><h3>Duyuru</h3><textarea id="notif-txt" class="inp" style="height:100px;"></textarea><button class="btn" onclick="sendNotification()">Yayınla</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Kapat</button></div></div>
 
-        <!-- BOTTOM NAV -->
+        <!-- NAVBAR -->
         <div class="nav-container">
             <div class="nav">
                 <div class="nav-item active" onclick="go('home',this)"><i class="fa-solid fa-house"></i></div>
                 <div class="nav-item" onclick="go('pdfs',this)"><i class="fa-solid fa-book-open"></i></div>
                 <div class="nav-item" onclick="go('earn',this)"><i class="fa-solid fa-gift"></i></div>
                 <div class="nav-item" onclick="go('profile',this)"><i class="fa-solid fa-user"></i></div>
-                <div class="nav-item" id="nav-admin" style="display:none;" onclick="go('admin',this); loadStats();"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="nav-item" id="nav-admin" style="display:none;" onclick="go('admin',this); loadStats();"><i class="fa-solid fa-shield"></i></div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // --- GÜVENLİK ---
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = function(e) {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) return false;
-        }
-
-        // --- FIREBASE CONFIG ---
+        // CONFIG
         const CFG = {
             apiKey: "AIzaSyCwWi_5x4EWDL7m8PfrhGWsR88WVRP9VI4",
             authDomain: "batidao-27d06.firebaseapp.com",
@@ -1257,572 +478,180 @@
             messagingSenderId: "1042251671951",
             appId: "1:1042251671951:web:3e579892dd3f57adfcc3fa"
         };
-
         const ADMIN_IDS = [7904032877, 8392479231];
-        const CATS = [
-            {n:"Matematik", i:"fa-calculator"}, {n:"Geometri", i:"fa-shapes"}, {n:"Fizik", i:"fa-atom"}, 
-            {n:"Kimya", i:"fa-flask"}, {n:"Biyoloji", i:"fa-dna"}, {n:"Türkçe", i:"fa-book"}, 
-            {n:"Edebiyat", i:"fa-feather"}, {n:"Tarih", i:"fa-landmark"}, {n:"Coğrafya", i:"fa-earth-americas"},
-            {n:"Felsefe", i:"fa-brain"}, {n:"Din", i:"fa-mosque"}, {n:"İngilizce", i:"fa-language"},
-            {n:"TYT", i:"fa-check"}, {n:"AYT", i:"fa-list-check"}
-        ];
-
-        // Ses efekti
-        const realClick = new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3");
-        function playClick() { realClick.currentTime = 0; realClick.volume = 0.3; realClick.play().catch(()=>{}); }
-
-        // Firebase başlat
+        
         firebase.initializeApp(CFG);
         const db = firebase.firestore();
-        db.enablePersistence().catch(()=>{});
-
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", last_name: "" };
-        let pdfs = [], selPdf = null, balance = 0;
-        let editingPdfId = null;
-        
-        // GÜNCELLENMİŞ: Motivasyon mesajları ve banner içerikleri
-        const motivationMessages = [
-            { emoji: "📚", text: "Bilgi Hazinesi", sub: "Kitaplar yükleniyor...", mot: "Her kitap yeni bir dünya", banner: "Bugün 50+ öğrenci katıldı!", badge: "5000+ jeton dağıtıldı" },
-            { emoji: "🚀", text: "Öğrenme Yolculuğu", sub: "En iyi kaynaklar seni bekliyor...", mot: "Başarıya giden yol bilgiden geçer", banner: "Hedefine bir adım daha yaklaş", badge: "1000+ kitap mevcut" },
-            { emoji: "💡", text: "Yeni Bilgiler", sub: "PDF'ler hazırlanıyor...", mot: "Her gün yeni bir şey öğren", banner: "Bugün 25 yeni kitap eklendi!", badge: "7/24 erişim" },
-            { emoji: "🎯", text: "Hedeflerine Odaklan", sub: "İçerikler yükleniyor...", mot: "Başarı planlı çalışmayla gelir", banner: "Sınavlara özel kaynaklar", badge: "Ücretsiz ders notları" },
-            { emoji: "⭐", text: "Başarıya Hazır mısın?", sub: "Kaynaklar hazırlanıyor...", mot: "Bugünün işini yarına bırakma", banner: "TYT-AYT kampanyası başladı!", badge: "%30 indirim" },
-            { emoji: "🎓", text: "Akademik Başarı", sub: "Ders notları yükleniyor...", mot: "Bilgi paylaştıkça çoğalır", banner: "Öğrenci dostu platform", badge: "15.000+ aktif kullanıcı" }
-        ];
+        let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
+        let pdfs = [], balance = 0, selPdf = null;
 
-        // Sayfa yüklendiğinde
-        window.onload = () => {
-            initializeApp();
-            
-            // Bannerları kontrol et
-            setTimeout(checkBanners, 1000);
-            
-            // 2 saniyede bir motivasyon mesajını değiştir
-            let msgIndex = 0;
-            setInterval(() => {
-                if (document.getElementById('page-loader').style.display !== 'none') {
-                    msgIndex = (msgIndex + 1) % motivationMessages.length;
-                    updateLoaderContent(msgIndex);
-                }
-            }, 2000);
-        };
-
-        function updateLoaderContent(index) {
-            const msg = motivationMessages[index];
-            document.getElementById('loader-emoji').textContent = msg.emoji;
-            document.getElementById('loader-text').textContent = msg.text;
-            document.getElementById('loader-sub').textContent = msg.sub;
-            document.getElementById('motivation-text').textContent = msg.mot;
-            
-            const bannerEl = document.getElementById('loader-banner');
-            bannerEl.innerHTML = `
-                <span class="banner-text">
-                    <i class="fa-regular fa-bolt" style="color: #FF9F0A;"></i> ${msg.banner}
-                </span>
-                <span class="banner-badge">
-                    <i class="fa-regular fa-coins" style="color: #FFD700;"></i> ${msg.badge}
-                </span>
-            `;
+        // "JETON HATASI" ÇÖZÜMÜ: User ID Yoksa Oluştur
+        if (user.id === 0) {
+            let stored = localStorage.getItem('guest_id');
+            if (!stored) { stored = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', stored); }
+            user.id = stored;
         }
 
-        function initializeApp() {
-            // Rastgele motivasyon mesajı
-            const randomIndex = Math.floor(Math.random() * motivationMessages.length);
-            updateLoaderContent(randomIndex);
-            
-            document.getElementById('u-name').innerHTML = `<i class="fa-regular fa-user" style="color: var(--primary);"></i> ${user.first_name}`;
-            document.getElementById('profile-name').innerHTML = `<i class="fa-regular fa-user" style="color: var(--primary);"></i> Profilim`;
-            
-            if(ADMIN_IDS.includes(user.id)) document.getElementById('nav-admin').style.display = 'flex';
-            if(user.photo_url) document.getElementById('u-avatar-box').innerHTML = `<img src="${user.photo_url}" style="width:100%; height:100%; object-fit:cover;">`;
-            
-            // Kullanıcı Kaydı
-            if(user.id !== 0) {
-                db.collection("users").doc(String(user.id)).set({ 
-                    name: user.first_name, 
-                    last: Date.now() 
-                }, {merge: true});
-                
-                db.collection("users").doc(String(user.id)).onSnapshot(doc => { 
-                    if(doc.exists) {
-                        balance = doc.data().balance || 0;
-                        updateBalanceUI();
-                    }
-                });
-            }
+        window.onload = () => {
+            initApp();
+            setTimeout(() => { document.getElementById('page-loader').style.display = 'none'; document.getElementById('app-container').classList.add('visible'); }, 1500);
+        }
+
+        function initApp() {
+            document.getElementById('u-name').innerText = user.first_name;
+            document.getElementById('profile-name').innerText = user.first_name;
+            if(ADMIN_IDS.includes(user.id)) document.getElementById('nav-admin').style.display='flex';
+            if(user.photo_url) document.getElementById('u-avatar-box').innerHTML = `<img src="${user.photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+
+            // Kullanıcı Kayıt & Bakiye Dinleme
+            const userRef = db.collection("users").doc(String(user.id));
+            userRef.set({ name: user.first_name, last: Date.now() }, {merge: true});
+            userRef.onSnapshot(doc => { 
+                if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); }
+            });
 
             // PDF Yükleme
             db.collection("pdfs").orderBy("date", "desc").onSnapshot(snap => { 
-                pdfs = []; 
-                snap.forEach(doc => pdfs.push({k:doc.id, ...doc.data()})); 
+                pdfs = []; snap.forEach(d => pdfs.push({k:d.id, ...d.data()})); 
                 renderPdfs('all');
-                
-                setTimeout(() => {
-                    document.getElementById('page-loader').style.display = 'none';
-                    document.getElementById('app-container').classList.add('visible');
-                }, 800);
-            }, error => {
-                console.error("PDF Yükleme hatası:", error);
-                setTimeout(() => {
-                    document.getElementById('page-loader').style.display = 'none';
-                    document.getElementById('app-container').classList.add('visible');
-                }, 800);
+                document.getElementById('st-users').innerText = pdfs.length;
             });
-            
-            renderCategories();
-            document.querySelectorAll('button, .btn, .nav-item, .side-item, .cat-item, .header-icon-btn').forEach(el => el.addEventListener('click', playClick));
-            
-            setTimeout(() => { 
-                if(document.getElementById('page-loader').style.display !== 'none') {
-                    document.getElementById('page-loader').style.display = 'none';
-                    document.getElementById('app-container').classList.add('visible');
-                }
-            }, 3000);
+
+            // Kategori
+            const cats = ["Matematik","Geometri","Fizik","Kimya","Biyoloji","Türkçe","Edebiyat","Tarih","Coğrafya"];
+            document.getElementById('home-cat-grid').innerHTML = cats.map(c => `<div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border); text-align:center;" onclick="filter('${c}')">${c}</div>`).join('');
+            document.getElementById('sb-list').innerHTML = cats.map(c => `<div style="padding:15px; color:var(--text-main);" onclick="filter('${c}')">${c}</div>`).join('');
         }
 
-        // Bannerları kontrol et - görünmeyenleri yedek banner ile değiştir
-        function checkBanners() {
-            const adBitsContainers = document.querySelectorAll('.adbits-container');
-            
-            adBitsContainers.forEach((container, index) => {
-                // Iframe'in yüklenip yüklenmediğini kontrol et
-                const iframe = container.querySelector('iframe');
-                if (iframe) {
-                    // Iframe zaten yüklü, bir sorun yok
-                } else {
-                    // Iframe yoksa veya yüklenmediyse, yedek banner'ı göster
-                    const backupBanner = document.getElementById(`backup-banner-${getBannerLocation(index)}`);
-                    if (backupBanner) {
-                        container.style.display = 'none';
-                        backupBanner.style.display = 'flex';
-                    }
-                }
-            });
-        }
-
-        // Banner lokasyonunu belirle
-        function getBannerLocation(index) {
-            const locations = ['home', 'pdfs-top', 'pdfs-bottom', 'earn', 'profile', 'unlock', 'loader', 'req-modal'];
-            return locations[index] || 'home';
-        }
-
-        // ÖDÜLLÜ REKLAM İZLE (MONETAG REWARDED)
+        // --- JETON KAZANMA SİSTEMİ (HATASIZ) ---
         function watchRewardedAd() {
-            const countInput = document.getElementById('ad-loop-count');
-            let count = parseInt(countInput.value);
-            if (!count || count <= 0) { 
-                showToast("Geçerli bir sayı girin.", "error"); 
-                return; 
-            }
+            let count = parseInt(document.getElementById('ad-loop-count').value);
+            if(count < 1) return;
+            showToast(`${count} Reklam hazırlanıyor...`);
             
-            showToast(`💰 Ödüllü reklam döngüsü başlıyor: ${count} adet`); 
-            
-            // Monetag rewarded ad göster
-            if (typeof window.show_10637714 === 'function') {
-                showRewardedAdLoop(count);
+            if(typeof window.show_10637714 === 'function') {
+                processAd(count);
             } else {
-                // Monetag yoksa test modu
-                showToast("Monetag SDK yükleniyor, test modu aktif", "info");
-                testRewardedAdLoop(count);
+                showToast("Reklam yüklenemedi! (AdBlock?)", "error");
             }
         }
 
-        // GERÇEK MONETAG ÖDÜLLÜ REKLAM DÖNGÜSÜ
-        function showRewardedAdLoop(remaining) {
-            if (remaining <= 0) { 
-                showToast("✨ Tüm reklamlar izlendi! Jetonlar eklendi."); 
-                return; 
-            }
+        function processAd(remaining) {
+            if(remaining <= 0) { showToast("Bitti! Jetonlar eklendi."); return; }
             
-            showToast(`📺 Reklam izleniyor... Kalan: ${remaining}`, "info");
-            
-            // Monetag rewarded ad göster
-            window.show_10637714().then((result) => {
-                // Reklam başarıyla izlendi - jeton ekle
-                db.collection("users").doc(String(user.id)).update({ 
-                    balance: firebase.firestore.FieldValue.increment(1) 
+            // Promise ile reklam gösterimi
+            window.show_10637714().then(() => {
+                // BAŞARILI
+                db.collection("users").doc(String(user.id)).update({
+                    balance: firebase.firestore.FieldValue.increment(1)
                 }).then(() => {
-                    showToast(`✅ +1 Jeton! Kalan: ${remaining - 1}`);
-                    setTimeout(() => showRewardedAdLoop(remaining - 1), 800);
-                }).catch(error => {
-                    console.error("Jeton eklenemedi:", error);
-                    showToast("❌ Jeton eklenirken hata", "error");
-                    setTimeout(() => showRewardedAdLoop(remaining - 1), 800);
+                    showToast(`✅ +1 Jeton! Kalan: ${remaining-1}`);
+                    setTimeout(() => processAd(remaining-1), 1000);
+                }).catch(e => {
+                    console.error(e);
+                    showToast("Jeton verilemedi (Veritabanı Hatası)", "error");
                 });
-            }).catch((error) => {
-                console.error("Reklam gösterilemedi:", error);
-                showToast("Reklam gösterilemedi, test moduna geçiliyor...", "error");
-                testRewardedAdLoop(remaining);
+            }).catch(e => {
+                console.warn(e);
+                showToast("Reklam kapatıldı veya yüklenmedi.", "error");
             });
         }
 
-        // TEST MODU (Monetag yoksa)
-        function testRewardedAdLoop(remaining) {
-            if (remaining <= 0) { 
-                showToast("✨ Test tamamlandı! Jetonlar eklendi."); 
-                return; 
-            }
-            
-            showToast(`🧪 Test: +1 jeton ekleniyor... Kalan: ${remaining}`);
-            
-            db.collection("users").doc(String(user.id)).update({ 
-                balance: firebase.firestore.FieldValue.increment(1) 
-            }).then(() => {
-                showToast(`✅ +1 Jeton! Kalan: ${remaining - 1}`);
-                setTimeout(() => testRewardedAdLoop(remaining - 1), 800);
-            }).catch(error => {
-                console.error("Jeton eklenemedi:", error);
-                showToast("❌ Jeton eklenirken hata", "error");
-                setTimeout(() => testRewardedAdLoop(remaining - 1), 800);
-            });
-        }
-
-        // Kategorileri render et
-        function renderCategories() {
-            const sbList = document.getElementById('sb-list');
-            const catGrid = document.getElementById('home-cat-grid');
-            sbList.innerHTML = '';
-            catGrid.innerHTML = '';
-            
-            CATS.forEach(c => {
-                sbList.innerHTML += `<div class="side-item" onclick="filter('${c.n}')"><i class="fa-solid ${c.i}"></i> ${c.n}</div>`;
-                if(catGrid.children.length < 6) {
-                    catGrid.innerHTML += `<div class="cat-item" onclick="filter('${c.n}')"><div class="cat-icon"><i class="fa-solid ${c.i}"></i></div><div>${c.n}</div></div>`;
-                }
-            });
-        }
-
-        // Bakiye güncelle
-        function updateBalanceUI() {
-            document.getElementById('home-balance').innerText = balance;
-            document.getElementById('lib-balance').innerText = balance;
-            document.getElementById('earn-balance').innerText = balance;
-            document.getElementById('profile-balance').innerText = balance;
-        }
-
-        // Sayfa değiştir
-        function go(viewId, el) {
-            playClick(); 
-            document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-            document.getElementById('v-' + viewId).classList.add('active'); 
-            
-            document.getElementById('header-actions').style.display = viewId === 'pdfs' ? 'flex' : 'none';
-            
-            if(el) { 
-                document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); 
-                el.classList.add('active'); 
-            } 
-        }
-
-        // Kategori filtrele
-        function filter(c) { 
-            playClick(); toggleSidebar(false); 
-            document.getElementById('lib-title').innerHTML = c === 'all' ? '<i class="fa-solid fa-book-open" style="color: var(--primary);"></i> Tüm Kitaplar' : `<i class="fa-solid fa-tag" style="color: var(--primary);"></i> ${c}`; 
-            renderPdfs(c); 
-            go('pdfs', document.querySelectorAll('.nav-item')[1]); 
-        }
-        
-        // PDF ikonu bul
-        function getPdfIcon(c) { 
-            let f = CATS.find(x => x.n === c); 
-            return f ? f.i : 'fa-file-pdf'; 
-        }
-        
-        // Link kopyala
-        function copyText(t) { 
-            navigator.clipboard.writeText(t).then(() => showToast("📋 Link kopyalandı!")).catch(() => {
-                const el = document.createElement('textarea'); 
-                el.value = t; 
-                document.body.appendChild(el); 
-                el.select(); 
-                document.execCommand('copy'); 
-                document.body.removeChild(el); 
-                showToast("📋 Link kopyalandı!"); 
-            });
-        }
-        
-        // Kilit kontrolü
-        function isUnlocked(id) { 
-            return (JSON.parse(localStorage.getItem('unlocked_pdfs') || '[]')).includes(id); 
-        }
-        
-        // Kilit aç
-        function setUnlocked(id) { 
-            let u = JSON.parse(localStorage.getItem('unlocked_pdfs') || '[]'); 
-            if(!u.includes(id)) { u.push(id); localStorage.setItem('unlocked_pdfs', JSON.stringify(u)); } 
-        }
-        
-        // PDFleri render et
+        // Render PDF (Grid + Banner Enjeksiyonu)
         function renderPdfs(c) {
-            let list = document.getElementById('pdf-list'); 
-            list.innerHTML = ''; 
-            let q = document.getElementById('search').value.toLowerCase();
-            let f = pdfs.filter(p => (c === 'all' || (p.cat && p.cat.includes(c))) && p.name.toLowerCase().includes(q));
+            const list = document.getElementById('pdf-list'); list.innerHTML = '';
+            const q = document.getElementById('search').value.toLowerCase();
+            const f = pdfs.filter(p => (c==='all' || (p.cat&&p.cat.includes(c))) && p.name.toLowerCase().includes(q));
             
-            if(f.length === 0) { 
-                list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fa-regular fa-face-frown" style="font-size: 40px; color: var(--text-sub);"></i><br>Kitap bulunamadı.</div>'; 
-                return; 
-            }
+            if(!f.length) { list.innerHTML = '<div style="grid-column:span 2; text-align:center; padding:20px; color:var(--text-sub);">Sonuç yok.</div>'; return; }
             
-            f.forEach(p => { 
-                let icon = getPdfIcon(p.cat ? p.cat.split(',')[0].trim() : '') || 'fa-file-pdf'; 
-                let lock = isUnlocked(p.k) ? 'fa-unlock' : 'fa-lock'; 
-                let col = isUnlocked(p.k) ? '#34C759' : '#CBD5E1'; 
+            f.forEach((p, i) => {
+                let img = p.img || '';
+                if(img.includes('imgur.com') && !img.includes('i.imgur.com')) img = `https://i.imgur.com/${img.split('/').pop()}.jpg`;
                 
-                let visualHtml = p.img 
-                    ? `<img src="${p.img}" class="pdf-cover-img" onerror="this.src='';">` 
-                    : `<div class="pdf-thumb"><i class="fa-solid ${icon}"></i></div>`;
-
                 list.innerHTML += `
                 <div class="pdf-box" onclick="unlockPdf('${p.k}')">
-                    ${visualHtml}
+                    ${img ? `<img src="${img}" class="pdf-cover">` : `<div class="pdf-thumb"><i class="fa-solid fa-file-pdf"></i></div>`}
                     <div class="pdf-title">${p.name}</div>
-                    <div class="pdf-price"><i class="fa-solid fa-coins"></i> ${p.cost || 5}</div>
                     <div class="pdf-info">
-                        <span><i class="fa-solid fa-download"></i> ${p.downloads || 0}</span>
+                        <span><i class="fa-solid fa-download"></i> ${p.downloads||0}</span>
+                        <span style="color:var(--coin); font-weight:700;">${p.cost||5} Jeton</span>
                     </div>
-                    <i class="fa-solid ${lock}" style="position:absolute; top:10px; right:10px; color:${col}; background:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.1);"></i>
-                </div>`; 
+                </div>`;
+                
+                // HER 4 KİTAPTA BİR BANNER EKLE (Satırı tamamen kaplar)
+                if ((i + 1) % 4 === 0) {
+                    list.innerHTML += `
+                    <div class="grid-banner-row">
+                        <div class="adbits-container">
+                            <iframe src="https://adbits.online/bits-ads.php?type=1&&ids=614" scrolling="no" allowtransparency="true" style="width:100%; height:90px; border:none;"></iframe>
+                        </div>
+                    </div>`;
+                }
             });
         }
-        
-        // PDF kilidi aç
-        function unlockPdf(k){ 
-            playClick(); 
-            selPdf = pdfs.find(x => x.k === k); 
-            if(isUnlocked(k)) { copyText(selPdf.link); return; }
+
+        // Unlock
+        function unlockPdf(k) {
+            selPdf = pdfs.find(p => p.k === k);
+            const unlocked = (JSON.parse(localStorage.getItem('unlocked')||'[]')).includes(k);
             
-            const cost = parseInt(selPdf.cost) || 5;
-            document.getElementById('unlock-msg').innerHTML = `📚 <strong>${selPdf.name}</strong><br><br>Bu kitabı indirmek için <span style="color: var(--coin);">${cost} jeton</span> gerekiyor.`;
-            document.getElementById('btn-unlock-pdf').onclick = () => processUnlock(selPdf, cost);
-            openModal('m-unlock'); 
-        }
-
-        // Kilit açma işlemi
-        function processUnlock(pdf, cost) {
-            if (balance >= cost) {
-                db.collection("users").doc(String(user.id)).update({
-                    balance: firebase.firestore.FieldValue.increment(-cost)
-                }).then(() => {
-                    addToHistory(pdf); 
-                    setUnlocked(pdf.k);
-                    db.collection("pdfs").doc(pdf.k).update({ downloads: firebase.firestore.FieldValue.increment(1) });
-                    copyText(pdf.link); 
-                    showToast("🔓 Kilit açıldı!"); 
-                    closeM(); 
-                    renderPdfs('all');
-                }).catch(() => showToast("❌ Bir hata oluştu", "error"));
-            } else {
-                showToast("❌ Yetersiz jeton!", "error"); 
-                closeM(); 
-                go('earn', document.querySelectorAll('.nav-item')[2]);
-            }
-        }
-
-        // Geçmişe ekle
-        function addToHistory(p) { 
-            let h = JSON.parse(localStorage.getItem('pdf_history') || '[]'); 
-            h = h.filter(x => x.n !== p.name); 
-            h.unshift({n:p.name, l:p.link, d:Date.now()}); 
-            if(h.length > 20) h.pop(); 
-            localStorage.setItem('pdf_history', JSON.stringify(h)); 
-        }
-        
-        // Geçmiş göster
-        function renderHistory() { 
-            let d = document.getElementById('history-list'); 
-            let h = JSON.parse(localStorage.getItem('pdf_history') || '[]'); 
-            d.innerHTML = h.length ? h.map(i => 
-                `<div class="list-item" onclick="copyText('${i.l}')">
-                    <div><i class="fa-solid fa-file-pdf" style="color: var(--primary);"></i> <b>${i.n}</b><br><small>${new Date(i.d).toLocaleDateString()}</small></div>
-                </div>`
-            ).join('') : '<div style="text-align:center; padding:20px; color: var(--text-sub);"><i class="fa-regular fa-clock" style="font-size: 30px;"></i><br>Geçmiş boş</div>';
-        }
-        
-        // Geçmiş temizle
-        function clearHistory() { 
-            if(confirm("Geçmiş temizlensin mi?")) { 
-                localStorage.removeItem('pdf_history'); 
-                renderHistory(); 
-                showToast("🗑️ Geçmiş temizlendi"); 
-            } 
-        }
-
-        // Sidebar toggle
-        function toggleSidebar(o) { 
-            playClick(); 
-            document.getElementById('sidebar').classList.toggle('open', o); 
-            document.getElementById('sb-overlay').style.display = o ? 'block' : 'none'; 
-        }
-        
-        // Toast mesajı
-        function showToast(msg, type='success') { 
-            const t = document.createElement('div'); 
-            t.className = `toast ${type}`; 
-            t.innerHTML = `<i class="fa-regular ${type==='error'?'fa-circle-exclamation':'fa-circle-check'}"></i> ${msg}`; 
-            document.getElementById('toast-container').appendChild(t); 
-            setTimeout(() => t.classList.add('hiding'), 2500);
-            setTimeout(() => t.remove(), 2900);
-        }
-        
-        // Kategori algılama
-        function detectCategory(name) {
-            const n = name.toLowerCase(); 
-            let found = '';
-            if(n.includes('mat')) found = 'Matematik'; 
-            else if(n.includes('geo')) found = 'Geometri'; 
-            else if(n.includes('fiz')) found = 'Fizik'; 
-            else if(n.includes('kim')) found = 'Kimya'; 
-            else if(n.includes('biyo')) found = 'Biyoloji'; 
-            else if(n.includes('türk') || n.includes('turk')) found = 'Türkçe'; 
-            else if(n.includes('edeb')) found = 'Edebiyat'; 
-            else if(n.includes('tar')) found = 'Tarih'; 
-            else if(n.includes('cog') || n.includes('coğ')) found = 'Coğrafya'; 
-            else if(n.includes('fel')) found = 'Felsefe'; 
-            else if(n.includes('din')) found = 'Din'; 
-            else if(n.includes('ing')) found = 'İngilizce';
-            if(n.includes('tyt')) found = found ? found + ', TYT' : 'TYT'; 
-            if(n.includes('ayt')) found = found ? found + ', AYT' : 'AYT';
-            if(found) document.getElementById('ap-c').value = found;
-        }
-        
-        // Otomatik algılama
-        function autoDetect(val, type) {
-            if(type === 'link') { 
-                try { 
-                    let decoded = decodeURIComponent(val.split('?')[0].split('/').pop()).replace(/\.pdf$/i,'').replace(/[_-]/g, ' '); 
-                    if(!document.getElementById('ap-n').value) document.getElementById('ap-n').value = decoded; 
-                    detectCategory(decoded); 
-                } catch(e){} 
-            }
-            if(type === 'name') detectCategory(val); 
-        }
-        
-        // Modal aç
-        function openModal(id){ 
-            playClick(); 
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-            const modal = document.getElementById(id);
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
-            if(id === 'm-reqs') renderRequests(); 
-            if(id === 'm-pdf') resetPdfForm(); 
-            if(id === 'm-users') renderUsers(''); 
-            if(id === 'm-user-notifs') renderNotifications(); 
-        }
-
-        // Modal kapat
-        function closeM(){ 
-            playClick(); 
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-            setTimeout(() => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'), 300);
-        }
-
-        // PDF kaydet
-        function savePdf(){ 
-            const n = document.getElementById('ap-n').value;
-            const l = document.getElementById('ap-l').value;
-            const c = document.getElementById('ap-c').value;
-            const a = document.getElementById('ap-cost').value;
-            const i = document.getElementById('ap-img').value; 
-
-            if(!n || !l || !c) { showToast("Eksik bilgi!","error"); return; } 
+            if(unlocked) { copyText(selPdf.link); return; }
             
-            const pdfData = {name:n, link:l, cat:c, cost:a ? Number(a) : 5, img:i};
-
-            if (editingPdfId) { 
-                db.collection("pdfs").doc(editingPdfId).update(pdfData).then(() => { 
-                    showToast("Güncellendi"); 
-                    resetPdfForm(); 
-                }); 
-            } else { 
-                db.collection("pdfs").add({...pdfData, date:Date.now(), downloads:0}).then(() => { 
-                    showToast("Eklendi"); 
-                    resetPdfForm(); 
-                }); 
-            } 
-        }
-        
-        // PDF form sıfırla
-        function resetPdfForm() { 
-            editingPdfId = null; 
-            ['ap-n','ap-l','ap-c','ap-img'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('ap-cost').value = '5'; 
-            document.getElementById('btn-save-pdf').innerHTML = '<i class="fa-solid fa-plus"></i> Ekle'; 
-            document.getElementById('edit-cancel-box').style.display = 'none'; 
-        }
-        
-        // Kullanıcıları getir
-        function renderUsers(q){ 
-            let d = document.getElementById('adm-user-list'); 
-            d.innerHTML = 'Yükleniyor...'; 
-            db.collection("users").get().then(s => { 
-                d.innerHTML = s.docs.map(doc => {
-                    let u = doc.data(); 
-                    if(!q || (u.name && u.name.toLowerCase().includes(q.toLowerCase()))) 
-                        return `<div class="list-item"><i class="fa-regular fa-user" style="color: var(--primary);"></i> <b>${u.name || "Adsız"}</b> <small>${doc.id.slice(0,6)}...</small></div>`;
-                }).join(''); 
-            }); 
-        }
-        
-        // İstekleri getir
-        function renderRequests(){ 
-            let d = document.getElementById('adm-req-list'); 
-            d.innerHTML = 'Yükleniyor...'; 
-            db.collection("requests").get().then(s => { 
-                d.innerHTML = s.docs.map(doc => {
-                    let r = doc.data(); 
-                    return `<div class="list-item"><div><i class="fa-solid fa-book" style="color: var(--primary);"></i> <b>${r.book}</b><br><small>${r.name}</small></div><button class="btn btn-dang" onclick="delReq('${doc.id}')"><i class="fa-solid fa-check"></i></button></div>`;
-                }).join(''); 
-            }); 
-        }
-        
-        // İstek sil
-        function delReq(id){ 
-            if(confirm("İstek tamamlandı mı?")) 
-                db.collection("requests").doc(id).delete().then(() => { renderRequests(); showToast("İstek tamamlandı"); }); 
-        }
-        
-        // Duyuruları render et
-        function renderNotifications(){ 
-            const l = document.getElementById('user-notif-list'); 
-            l.innerHTML = 'Yükleniyor...'; 
-            db.collection("notifications").orderBy("date","desc").limit(10).get().then(s => { 
-                l.innerHTML = s.docs.length ? s.docs.map(d => 
-                    `<div class="notif-item"><i class="fa-regular fa-bell"></i> <small>${new Date(d.data().date).toLocaleDateString()}</small><br>${d.data().text}</div>`
-                ).join('') : '<div style="text-align:center; padding:20px; color: var(--text-sub);"><i class="fa-regular fa-bell-slash" style="font-size: 30px;"></i><br>Duyuru yok</div>';
-            }); 
-        }
-        
-        // Duyuru gönder
-        function sendNotification(){ 
-            let t = document.getElementById('notif-txt').value; 
-            if(t) db.collection("notifications").add({text:t, date:Date.now()}).then(() => { showToast("Duyuru yayınlandı"); document.getElementById('notif-txt').value = ''; }); 
-            else showToast("Duyuru metni boş!","error"); 
-        }
-        
-        // İstek gönder
-        function sendReq(){ 
-            let t = document.getElementById('req-txt').value; 
-            if(t) db.collection("requests").add({book:t, name:user.first_name}).then(() => { showToast("İstek gönderildi"); closeM(); }); 
-            else showToast("Kitap adı girin!","error"); 
-        }
-        
-        // İstatistik yükle
-        function loadStats() { 
-            db.collection("users").get().then(s => document.getElementById('st-users').innerText = s.size); 
-            const fiveMinAgo = Date.now() - (5 * 60 * 1000); 
-            db.collection("users").where('last', '>', fiveMinAgo).get().then(s => { 
-                document.getElementById('st-active-users').innerText = s.size; 
-            }); 
+            document.getElementById('unlock-msg').innerText = `${selPdf.name} - ${selPdf.cost||5} Jeton`;
+            document.getElementById('btn-unlock-pdf').onclick = () => {
+                if(balance >= (selPdf.cost||5)) {
+                    db.collection("users").doc(String(user.id)).update({ balance: firebase.firestore.FieldValue.increment(-(selPdf.cost||5)) });
+                    db.collection("pdfs").doc(k).update({ downloads: firebase.firestore.FieldValue.increment(1) });
+                    
+                    let u = JSON.parse(localStorage.getItem('unlocked')||'[]'); u.push(k); localStorage.setItem('unlocked', JSON.stringify(u));
+                    copyText(selPdf.link); closeM(); renderPdfs('all');
+                } else {
+                    showToast("Yetersiz Bakiye!", "error"); closeM(); go('earn');
+                }
+            };
+            openModal('m-unlock');
         }
 
-        // Input alanlarına otomatik algılama ekle
-        document.getElementById('ap-l')?.addEventListener('input', (e) => autoDetect(e.target.value, 'link'));
-        document.getElementById('ap-n')?.addEventListener('input', (e) => autoDetect(e.target.value, 'name'));
+        // Helpers
+        function updateBalanceUI() { document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = balance); }
+        function go(v, el) { 
+            document.querySelectorAll('.view').forEach(x => x.classList.remove('active')); 
+            document.getElementById('v-'+v).classList.add('active');
+            if(el) { document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); el.classList.add('active'); }
+        }
+        function toggleSidebar(o) { document.getElementById('sidebar').style.left = o ? '0' : '-280px'; document.getElementById('sb-overlay').style.display = o ? 'block' : 'none'; }
+        function openModal(i) { document.getElementById(i).style.display='flex'; setTimeout(()=>document.getElementById(i).classList.add('active'),10); }
+        function closeM() { document.querySelectorAll('.modal-overlay').forEach(x => { x.classList.remove('active'); setTimeout(()=>x.style.display='none',300); }); }
+        function filter(c) { toggleSidebar(false); document.getElementById('lib-title').innerText=c; renderPdfs(c); go('pdfs', document.querySelectorAll('.nav-item')[1]); }
+        function copyText(t) { navigator.clipboard.writeText(t); showToast("Link Kopyalandı!"); }
+        function showToast(m, t='s') { 
+            const d=document.createElement('div'); d.className='toast'; d.innerHTML = (t==='error'?'<i class="fa-solid fa-triangle-exclamation" style="color:#ff453a"></i> ':'<i class="fa-solid fa-check-circle" style="color:#30d158"></i> ') + m;
+            document.getElementById('toast-container').appendChild(d); setTimeout(()=>d.remove(),3000);
+        }
+        
+        // Admin
+        function savePdf() {
+            const d = { 
+                link: document.getElementById('ap-l').value, 
+                name: document.getElementById('ap-n').value, 
+                img: document.getElementById('ap-img').value, 
+                cat: document.getElementById('ap-c').value, 
+                cost: Number(document.getElementById('ap-cost').value),
+                date: Date.now()
+            };
+            if(d.link) { db.collection("pdfs").add(d).then(()=>showToast("Eklendi")); closeM(); }
+        }
+        function sendReq() { let v=document.getElementById('req-txt').value; if(v) db.collection("requests").add({book:v, user:user.first_name}).then(()=>showToast("Gitti")); closeM(); }
+        function sendNotification() { let v=document.getElementById('notif-txt').value; if(v) db.collection("notifications").add({text:v, date:Date.now()}); closeM(); }
+        function loadStats() {
+            db.collection("users").get().then(s => {
+               document.getElementById('adm-user-list').innerHTML = s.docs.map(d => `<div>${d.data().name}</div>`).join(''); 
+            });
+        }
     </script>
 </body>
 </html>
