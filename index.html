@@ -359,7 +359,7 @@
             </div>
         </div>
 
-        <!-- ÖDÜLLÜ REKLAM EKLEME MODALI (YENİ) -->
+        <!-- ÖDÜLLÜ REKLAM EKLEME MODALI -->
         <div id="m-add-rewarded" class="modal-overlay">
             <div class="modal-box">
                 <h3>Ödüllü Reklam Ekle</h3>
@@ -368,6 +368,7 @@
                 <input id="rad-title" class="inp" placeholder="Reklam Başlığı / Yazı">
                 <input id="rad-btn" class="inp" placeholder="Buton Yazısı (örn: İncele)">
                 <input id="rad-link" class="inp" placeholder="Yönlendirme Linki">
+                <input id="rad-limit" type="number" class="inp" placeholder="İzlenme Limiti (0 = Sınırsız)">
                 <button class="btn" onclick="saveRewardedAd()">Ekle</button>
                 
                 <h4 style="margin-top:15px; font-size:13px; color:var(--text-sub); text-align:left;">Aktif Ödüllü Reklamlar</h4>
@@ -417,10 +418,10 @@
         let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
         let pdfs = [], balance = 0, selPdf = null;
         let activeBanners = []; 
-        let rewardedAds = []; // Ödüllü reklam listesi
-        let currentRewardedAd = null; // Şu an izlenen reklam
-        let adInterval = null; // Sayaç intervali
-        let remainingAdsToWatch = 0; // İzlenmesi gereken kalan reklam sayısı (loop için)
+        let rewardedAds = [];
+        let currentRewardedAd = null;
+        let adInterval = null;
+        let remainingAdsToWatch = 0;
 
         if (user.id === 0) { let s = localStorage.getItem('guest_id'); if (!s) { s = 'guest_' + Math.floor(Math.random()*999999); localStorage.setItem('guest_id', s); } user.id = s; }
 
@@ -464,7 +465,7 @@
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
             
-            // BANNER DİNLEYİCİSİ
+            // BANNER DİNLEYİCİSİ (Strict Filter)
             db.collection("banners").orderBy("date", "desc").onSnapshot(snap => {
                 activeBanners = [];
                 let adminHtml = "";
@@ -472,34 +473,41 @@
                     const b = doc.data();
                     const bid = doc.id;
                     const isActive = b.limit === 0 || b.views < b.limit;
-                    if(isActive) activeBanners.push({id: bid, ...b});
-                    adminHtml += `<div class="admin-item"><div style="display:flex; align-items:center;"><img src="${b.img}" style="object-fit:cover;"><div><div style="font-weight:600; font-size:12px;">${b.limit === 0 ? 'Sınırsız' : b.limit + ' Limit'}</div><div style="font-size:10px; color:var(--text-sub);"><i class="fa-solid fa-eye"></i> ${b.views || 0} Görüntülenme</div></div></div><button class="btn btn-danger" style="width:28px; height:28px; padding:0; border-radius:8px;" onclick="deleteBanner('${bid}')"><i class="fa-solid fa-trash"></i></button></div>`;
+                    
+                    if(isActive) {
+                        activeBanners.push({id: bid, ...b});
+                        adminHtml += `<div class="admin-item"><div style="display:flex; align-items:center;"><img src="${b.img}" style="object-fit:cover;"><div><div style="font-weight:600; font-size:12px;">Limit: ${b.views}/${b.limit === 0 ? '∞' : b.limit}</div><div style="font-size:10px; color:var(--text-sub);">Görüntülenme</div></div></div><button class="btn btn-danger" style="width:28px; height:28px; padding:0; border-radius:8px;" onclick="deleteBanner('${bid}')"><i class="fa-solid fa-trash"></i></button></div>`;
+                    }
                 });
-                const el = document.getElementById('banner-list'); if(el) el.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Banner yok</div>";
+                const el = document.getElementById('banner-list'); if(el) el.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Aktif banner yok</div>";
                 refreshAllBanners();
             });
 
-            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ (YENİ)
+            // ÖDÜLLÜ REKLAM DİNLEYİCİSİ (Strict Filter)
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
                 rewardedAds = [];
                 let adminHtml = "";
                 snap.forEach(doc => {
                     const r = doc.data();
-                    rewardedAds.push({id: doc.id, ...r});
-                    adminHtml += `
-                        <div class="admin-item">
-                            <div>
-                                <div style="font-weight:700;">${r.sponsor}</div>
-                                <div style="font-size:10px; color:var(--text-sub);">
-                                    <i class="fa-solid fa-eye"></i> ${r.views || 0} İzleme | 
-                                    <i class="fa-solid fa-computer-mouse"></i> ${r.clicks || 0} Tık
+                    const isActive = r.limit === 0 || r.views < r.limit;
+
+                    if(isActive) {
+                        rewardedAds.push({id: doc.id, ...r});
+                        adminHtml += `
+                            <div class="admin-item">
+                                <div>
+                                    <div style="font-weight:700;">${r.sponsor}</div>
+                                    <div style="font-size:10px; color:var(--text-sub);">
+                                        Limit: ${r.views}/${r.limit === 0 ? '∞' : r.limit} | 
+                                        <i class="fa-solid fa-computer-mouse"></i> ${r.clicks || 0}
+                                    </div>
                                 </div>
+                                <button class="btn btn-danger" style="width:28px; height:28px; padding:0; border-radius:8px;" onclick="deleteRewardedAd('${doc.id}')"><i class="fa-solid fa-trash"></i></button>
                             </div>
-                            <button class="btn btn-danger" style="width:28px; height:28px; padding:0; border-radius:8px;" onclick="deleteRewardedAd('${doc.id}')"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
+                        `;
+                    }
                 });
-                const el = document.getElementById('rewarded-ad-list'); if(el) el.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Reklam yok</div>";
+                const el = document.getElementById('rewarded-ad-list'); if(el) el.innerHTML = adminHtml || "<div style='padding:10px; text-align:center; color:var(--text-sub)'>Aktif reklam yok</div>";
             });
 
             db.collection("pdfs").orderBy("date", "desc").onSnapshot(snap => { 
@@ -542,7 +550,7 @@
         }
         function deleteBanner(id) { if(confirm("Silinsin mi?")) db.collection("banners").doc(id).delete(); }
 
-        // --- ÖDÜLLÜ REKLAM SİSTEMİ (CUSTOM) ---
+        // --- ÖDÜLLÜ REKLAM SİSTEMİ ---
         function watchRewardedAd() {
             let count = parseInt(document.getElementById('ad-loop-count').value);
             if(count < 1) return;
@@ -558,7 +566,7 @@
 
         function showCustomAd() {
             if(rewardedAds.length === 0) return;
-            // Rastgele reklam seç
+            // Rastgele reklam seç (Aktif listeden)
             const rand = Math.floor(Math.random() * rewardedAds.length);
             currentRewardedAd = rewardedAds[rand];
             
@@ -632,6 +640,8 @@
             let t = document.getElementById('rad-title').value;
             let b = document.getElementById('rad-btn').value;
             let l = document.getElementById('rad-link').value;
+            let lim = parseInt(document.getElementById('rad-limit').value);
+            if(isNaN(lim)) lim = 0;
 
             if (i && i.includes('imgur.com') && !i.includes('i.imgur.com')) { let id = i.split('/').pop().split('?')[0]; if (id && !id.includes('.')) i = `https://i.imgur.com/${id}.jpg`; }
 
@@ -643,6 +653,7 @@
                 title: t,
                 btnText: b || 'Tıkla',
                 link: l,
+                limit: lim,
                 views: 0,
                 clicks: 0,
                 date: Date.now()
