@@ -214,6 +214,41 @@
         .ad-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: 600; width: 80%; font-size: 16px; box-shadow: 0 0 20px rgba(10,132,255,0.4); cursor: pointer; }
         .ad-timer-box { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; }
         .ad-close-btn { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; }
+        .surf-status { margin-top: 10px; font-size: 12px; color: var(--text-sub); min-height: 18px; }
+
+        .card { transition: transform 0.35s var(--ease-smooth), box-shadow 0.35s var(--ease-smooth), border-color 0.35s var(--ease-smooth); }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.18); border-color: rgba(255,255,255,0.18); }
+
+        .btn { transition: transform 0.22s var(--ease-spring), filter 0.25s var(--ease-smooth), box-shadow 0.25s var(--ease-smooth); }
+        .btn:hover { filter: brightness(1.05); }
+        .btn:active { transform: scale(0.97); }
+
+        .surf-btn {
+            position: relative;
+            overflow: hidden;
+            animation: pulseSurf 2.2s ease-in-out infinite;
+        }
+        .surf-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -130%;
+            width: 120%;
+            height: 100%;
+            background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.35) 45%, transparent 100%);
+            animation: surfShine 2.8s ease-in-out infinite;
+        }
+        .surf-status { transition: color 0.3s ease, transform 0.3s ease; }
+        .surf-status.updating { color: var(--accent); transform: translateY(-1px); }
+
+        @keyframes surfShine {
+            0% { left: -130%; }
+            55%, 100% { left: 140%; }
+        }
+        @keyframes pulseSurf {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255,159,10,0.30); }
+            50% { box-shadow: 0 8px 22px rgba(255,159,10,0.45); }
+        }
     </style>
 </head>
 <body>
@@ -267,7 +302,7 @@
                     <h2 style="font-size:24px; font-weight:700; margin-bottom:5px;">Merhaba 👋</h2>
                     <p style="color:var(--text-sub); margin-bottom:20px; font-size:14px;">Bilgiye ulaşmak şimdi çok kolay.</p>
                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.05); padding:16px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                        <div><div style="font-size:10px; color:var(--text-sub); font-weight:600;">BAKİYE</div><div style="font-size:28px; font-weight:800;" id="home-balance">0</div></div>
+                        <div><div style="font-size:10px; color:var(--text-sub); font-weight:600;">BAKİYE</div><div style="font-size:28px; font-weight:800;" id="home-balance">0.0000</div></div>
                         <div style="width:45px; height:45px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:black; font-size:20px;"><i class="fa-solid fa-coins"></i></div>
                     </div>
                 </div>
@@ -299,18 +334,18 @@
                 <h2 style="font-weight:700; font-size:26px; margin-bottom:20px; color:var(--accent);">Kazan</h2>
                 <div class="card" style="text-align:center; padding:35px;">
                     <div style="font-size:50px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-coins"></i></div>
-                    <div style="font-size:42px; font-weight:800;" id="earn-balance">0</div>
+                    <div style="font-size:42px; font-weight:800;" id="earn-balance">0.0000</div>
                     <div style="color:var(--text-sub); font-size:12px;">TOPLAM JETON</div>
                 </div>
                 <div class="card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <h3 style="font-size:16px;">Video İzle</h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center; gap:10px;">
+                        <h3 style="font-size:16px;">Sitelerde Dolaş</h3>
                         <span style="background:rgba(52,199,89,0.15); color:var(--success); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">+1 Jeton</span>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <input type="number" id="ad-loop-count" class="inp" placeholder="#" style="width:70px; margin:0; text-align:center;" value="1">
-                        <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">İzlemeye Başla</button>
-                    </div>
+                    <input id="zerads-user" class="inp" placeholder="ZerAds kullanıcı adın" style="margin-bottom:10px;">
+                    <button class="btn btn-coin surf-btn" onclick="watchRewardedAd()" style="width:100%;">Surf Başlat</button>
+                    <button class="btn btn-sec" onclick="syncPtcRewards(true)" style="width:100%; margin-top:8px;">Ödülü Kontrol Et</button>
+                    <div id="surf-status" class="surf-status">Butona bas, surf açılır. Jeton callback ile otomatik eklenir.</div>
                 </div>
                 <div class="ad-slot dynamic-banner"></div>
             </div>
@@ -440,16 +475,19 @@
         // INIT
         firebase.initializeApp(CFG);
         const db = firebase.firestore();
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+        if (tg && typeof tg.expand === 'function') tg.expand();
 
-        let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
+        let user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 0, first_name: "Misafir", photo_url: "" };
         let pdfs = [], balance = 0, selPdf = null;
         let rewardedAds = [];
         let currentRewardedAd = null;
         let adInterval = null;
         let remainingAdsToWatch = 0;
         let searchTimeout = null; 
+        let zerAds728Markup = null;
+        let syncInFlight = false;
+        const SURF_REDIRECT_URL = 'https://zerads.com/ptc.php?ref=10799';
 
         // GRAFİK DEĞİŞKENLERİ
         let userChartInstance = null;
@@ -464,15 +502,25 @@
         }
 
         // --- BAŞLANGIÇ ---
+        function hideLoader() {
+            const loader = document.getElementById('page-loader');
+            const app = document.getElementById('app-container');
+            if(loader && loader.style.display !== 'none') {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display='none', 600);
+            }
+            if(app) app.classList.add('visible');
+        }
+
         window.onload = () => {
-            initApp();
-            setTimeout(() => { 
-                const loader = document.getElementById('page-loader');
-                if(loader && loader.style.display !== 'none') {
-                    loader.style.opacity = '0'; setTimeout(()=>loader.style.display='none', 600); 
-                    document.getElementById('app-container').classList.add('visible'); 
-                }
-            }, 2500);
+            setTimeout(hideLoader, 2500);
+            try {
+                initApp();
+            } catch (error) {
+                console.error('initApp hata:', error);
+                showToast('Yükleme sırasında hata oluştu, güvenli mod açıldı.', 'error');
+                hideLoader();
+            }
         }
 
         function safeSetText(id, txt) {
@@ -496,6 +544,11 @@
 
             db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
+            const savedZeradsUser = localStorage.getItem('zerads_user') || '';
+            const zeradsInput = document.getElementById('zerads-user');
+            if (zeradsInput && savedZeradsUser) zeradsInput.value = savedZeradsUser;
+            syncPtcRewards();
+            setInterval(syncPtcRewards, 60000);
             
             // ÖDÜLLÜ REKLAM DİNLEYİCİSİ
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
@@ -560,15 +613,40 @@
             return url;
         }
 
-        function getBannerHTML() {
-            return `<!-- 3. MONDIAD BANNER KODU BURAYA EKLENECEK -->
-                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-sub); font-size:12px;">
-                        <!-- Reklam Alanı -->
-                    </div>`;
+        async function loadZerAdsBannerMarkup() {
+            if (zerAds728Markup !== null) return zerAds728Markup;
+            try {
+                const response = await fetch('https://zerads.com/ad/ad.php?ref=10799&width=728');
+                zerAds728Markup = await response.text();
+            } catch (error) {
+                console.error('ZerAds banner alınamadı:', error);
+                zerAds728Markup = '*BLANK*';
+            }
+            return zerAds728Markup;
         }
-        
-        function refreshAllBanners() { 
-            document.querySelectorAll('.dynamic-banner').forEach(el => { el.innerHTML = getBannerHTML(); }); 
+
+        function getBannerHTML() {
+            return `<div class="zerads-728-slot" style="width:100%; display:flex; justify-content:center;"></div>`;
+        }
+
+        function renderZerAdsBanner(slot, data) {
+            if (!slot) return;
+            if (data && !data.includes('*BLANK*')) {
+                const cleanData = data.replace('<meta http-equiv="refresh" content="280">', '');
+                slot.innerHTML = "<iframe style='border:none;' width='728' height='90' loading='lazy'></iframe>";
+                const iframe = slot.querySelector('iframe');
+                if (iframe) iframe.srcdoc = cleanData;
+            } else {
+                slot.innerHTML = "<a href='https://zerads.com/index.php?view=site&id=10799' target='_blank' rel='noopener noreferrer'><div style='width: 728px; height: 90px; max-width:100%; background-color: rgba(200, 200, 200, 0.1); position: relative; border-radius: 10px;'><div style='position: absolute; color: #999; font-size: clamp(20px, 6vw, 40px); top: 24%; left: 50%; transform:translateX(-50%); font-family: Arial;'><i>Advertise Here</i></div></div></a>";
+            }
+        }
+
+        async function refreshAllBanners() {
+            const bannerData = await loadZerAdsBannerMarkup();
+            document.querySelectorAll('.dynamic-banner').forEach(el => {
+                el.innerHTML = getBannerHTML();
+                renderZerAdsBanner(el.querySelector('.zerads-728-slot'), bannerData);
+            });
         }
 
         function delayedSearch() {
@@ -578,17 +656,60 @@
             }, 500); 
         }
 
-        function watchRewardedAd() {
-            let count = parseInt(document.getElementById('ad-loop-count').value);
-            if(count < 1) return;
-            remainingAdsToWatch = count;
-            
-            if(rewardedAds.length === 0) {
-                showToast("Şuanlik ödüllü reklam bulunmamakta", "error");
-                return;
+        async function syncPtcRewards(forceNotice = false) {
+            if (syncInFlight) return;
+            syncInFlight = true;
+            try {
+                const zeradsInput = document.getElementById('zerads-user');
+                const enteredUser = zeradsInput ? zeradsInput.value.trim() : '';
+                if (enteredUser) localStorage.setItem('zerads_user', enteredUser);
+
+                const candidates = [
+                    enteredUser,
+                    localStorage.getItem('zerads_user') || '',
+                    String(user.id),
+                    String(user.first_name || '')
+                ].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i);
+
+                let totalPending = 0;
+                for (const candidate of candidates) {
+                    const response = await fetch(`zeradsptc.php?action=sync&user=${encodeURIComponent(candidate)}`);
+                    const data = await response.json();
+                    const pending = Number(data && data.pending ? data.pending : 0);
+                    if (data.ok && pending > 0) totalPending += pending;
+                }
+
+                if (totalPending > 0) {
+                    await db.collection("users").doc(String(user.id)).set({
+                        balance: firebase.firestore.FieldValue.increment(totalPending),
+                        last: Date.now()
+                    }, { merge: true });
+                    showToast(`✅ +${totalPending.toFixed(4)} Jeton (Callback)`);
+                    const status = document.getElementById('surf-status');
+                    if (status) status.innerText = `Ödül geldi: +${totalPending.toFixed(4)} Jeton`;
+                } else if (forceNotice) {
+                    showToast('Henüz callback gelmedi. 5 dk sonra tekrar kontrol et.', 'error');
+                }
+            } catch (err) {
+                console.error('PTC sync hatası:', err);
+                if (forceNotice) showToast('Ödül kontrolünde hata oluştu', 'error');
+            } finally {
+                syncInFlight = false;
             }
-            
-            showCustomAd();
+        function watchRewardedAd() {
+            const status = document.getElementById('surf-status');
+            if(status) {
+                status.classList.add('updating');
+                status.innerText = 'Yönlendiriliyor...';
+            }
+            window.open(SURF_REDIRECT_URL, '_blank');
+            setTimeout(() => {
+                if(status) {
+                    status.innerText = 'Surf açıldı. ZerAds kullanıcı adını doğru yazdıysan ödül 5 dk içinde gelir.';
+                    status.classList.remove('updating');
+                }
+            }, 350);
+            showToast('Surf açıldı. Ödül callback ile eklenecek.');
         }
 
         function showCustomAd() {
@@ -722,7 +843,7 @@
             });
         }
 
-        function updateBalanceUI() { document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = balance); }
+        function updateBalanceUI() { document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = Number(balance || 0).toFixed(4)); }
         function go(v, el) { 
             document.querySelectorAll('.view').forEach(x => x.classList.remove('active')); 
             document.getElementById('v-'+v).classList.add('active'); 
