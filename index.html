@@ -450,6 +450,7 @@
         let adInterval = null;
         let remainingAdsToWatch = 0;
         let searchTimeout = null; 
+        let zerAds728Markup = null;
 
         // GRAFİK DEĞİŞKENLERİ
         let userChartInstance = null;
@@ -560,15 +561,40 @@
             return url;
         }
 
-        function getBannerHTML() {
-            return `<!-- 3. MONDIAD BANNER KODU BURAYA EKLENECEK -->
-                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-sub); font-size:12px;">
-                        <!-- Reklam Alanı -->
-                    </div>`;
+        async function loadZerAdsBannerMarkup() {
+            if (zerAds728Markup !== null) return zerAds728Markup;
+            try {
+                const response = await fetch('https://zerads.com/ad/ad.php?ref=10799&width=728');
+                zerAds728Markup = await response.text();
+            } catch (error) {
+                console.error('ZerAds banner alınamadı:', error);
+                zerAds728Markup = '*BLANK*';
+            }
+            return zerAds728Markup;
         }
-        
-        function refreshAllBanners() { 
-            document.querySelectorAll('.dynamic-banner').forEach(el => { el.innerHTML = getBannerHTML(); }); 
+
+        function getBannerHTML() {
+            return `<div class="zerads-728-slot" style="width:100%; display:flex; justify-content:center;"></div>`;
+        }
+
+        function renderZerAdsBanner(slot, data) {
+            if (!slot) return;
+            if (data && !data.includes('*BLANK*')) {
+                const cleanData = data.replace('<meta http-equiv="refresh" content="280">', '');
+                slot.innerHTML = "<iframe style='border:none;' width='728' height='90' loading='lazy'></iframe>";
+                const iframe = slot.querySelector('iframe');
+                if (iframe) iframe.srcdoc = cleanData;
+            } else {
+                slot.innerHTML = "<a href='https://zerads.com/index.php?view=site&id=10799' target='_blank' rel='noopener noreferrer'><div style='width: 728px; height: 90px; max-width:100%; background-color: rgba(200, 200, 200, 0.1); position: relative; border-radius: 10px;'><div style='position: absolute; color: #999; font-size: clamp(20px, 6vw, 40px); top: 24%; left: 50%; transform:translateX(-50%); font-family: Arial;'><i>Advertise Here</i></div></div></a>";
+            }
+        }
+
+        async function refreshAllBanners() {
+            const bannerData = await loadZerAdsBannerMarkup();
+            document.querySelectorAll('.dynamic-banner').forEach(el => {
+                el.innerHTML = getBannerHTML();
+                renderZerAdsBanner(el.querySelector('.zerads-728-slot'), bannerData);
+            });
         }
 
         function delayedSearch() {
@@ -644,10 +670,11 @@
             document.getElementById('custom-ad-player').classList.remove('active');
             clearInterval(adInterval);
             
-            db.collection("users").doc(String(user.id)).update({ balance: firebase.firestore.FieldValue.increment(1) })
+            const earned = Number((Math.random() * 0.5 + 0.5).toFixed(2));
+            db.collection("users").doc(String(user.id)).update({ balance: firebase.firestore.FieldValue.increment(earned) })
             .then(() => {
                 remainingAdsToWatch--;
-                showToast(`✅ +1 Jeton!`);
+                showToast(`✅ +${earned} Jeton!`);
                 if(remainingAdsToWatch > 0) {
                     setTimeout(() => { showToast(`${remainingAdsToWatch} reklam kaldı...`); showCustomAd(); }, 1000);
                 } else {
