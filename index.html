@@ -214,6 +214,18 @@
         .ad-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: 600; width: 80%; font-size: 16px; box-shadow: 0 0 20px rgba(10,132,255,0.4); cursor: pointer; }
         .ad-timer-box { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; }
         .ad-close-btn { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; }
+
+        .ptc-shell {
+            border-radius: 18px;
+            border: 0.5px solid var(--border);
+            background: linear-gradient(165deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            padding: 12px;
+            margin-top: 12px;
+        }
+        .ptc-status-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: #34C759; display: inline-block;
+            box-shadow: 0 0 0 6px rgba(52,199,89,0.12);
+        }
     </style>
 </head>
 <body>
@@ -267,7 +279,7 @@
                     <h2 style="font-size:24px; font-weight:700; margin-bottom:5px;">Merhaba 👋</h2>
                     <p style="color:var(--text-sub); margin-bottom:20px; font-size:14px;">Bilgiye ulaşmak şimdi çok kolay.</p>
                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.05); padding:16px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                        <div><div style="font-size:10px; color:var(--text-sub); font-weight:600;">BAKİYE</div><div style="font-size:28px; font-weight:800;" id="home-balance">0</div></div>
+                        <div><div style="font-size:10px; color:var(--text-sub); font-weight:600;">BAKİYE</div><div style="font-size:28px; font-weight:800;" id="home-balance">0.0000</div></div>
                         <div style="width:45px; height:45px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:black; font-size:20px;"><i class="fa-solid fa-coins"></i></div>
                     </div>
                 </div>
@@ -299,17 +311,20 @@
                 <h2 style="font-weight:700; font-size:26px; margin-bottom:20px; color:var(--accent);">Kazan</h2>
                 <div class="card" style="text-align:center; padding:35px;">
                     <div style="font-size:50px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-coins"></i></div>
-                    <div style="font-size:42px; font-weight:800;" id="earn-balance">0</div>
+                    <div style="font-size:42px; font-weight:800;" id="earn-balance">0.0000</div>
                     <div style="color:var(--text-sub); font-size:12px;">TOPLAM JETON</div>
                 </div>
                 <div class="card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <h3 style="font-size:16px;">Video İzle</h3>
-                        <span style="background:rgba(52,199,89,0.15); color:var(--success); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">+1 Jeton</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:flex-start; gap:10px;">
+                        <div>
+                            <h3 style="font-size:16px;">PTC Surfing (ZerAds)</h3>
+                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">Tek dokunuşla PTC sayfasına yönlendirir. Ödeme callback ile otomatik işlenir.</div>
+                        </div>
+                        <span style="background:rgba(10,132,255,0.15); color:var(--primary); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">AUTO</span>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <input type="number" id="ad-loop-count" class="inp" placeholder="#" style="width:70px; margin:0; text-align:center;" value="1">
-                        <button class="btn btn-coin" onclick="watchRewardedAd()" style="flex:1;">İzlemeye Başla</button>
+                    <button class="btn btn-coin" onclick="startPtcSurfing()" style="display:flex; align-items:center; justify-content:center; gap:8px;"><i class="fa-solid fa-paper-plane"></i> PTC Surfing Başlat</button>
+                    <div id="ptc-info" class="ptc-shell" style="font-size:12px; color:var(--text-sub); line-height:1.6;">
+                        PTC hazırlanıyor...
                     </div>
                 </div>
                 <div class="ad-slot dynamic-banner"></div>
@@ -361,7 +376,6 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                     <div class="btn btn-sec" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus"></i> Ekle</div>
                     <div class="btn btn-sec" onclick="openPdfList()"><i class="fa-solid fa-list"></i> Kitaplar</div>
-                    <div class="btn btn-sec" onclick="openModal('m-add-rewarded')"><i class="fa-solid fa-video"></i> Ödüllü</div>
                     <div class="btn btn-sec" onclick="openModal('m-users')"><i class="fa-solid fa-users"></i> Üyeler</div>
                     <div class="btn btn-sec" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn"></i> Duyuru</div>
                 </div>
@@ -380,28 +394,6 @@
                 <button class="btn btn-coin" id="btn-unlock-pdf">Onayla</button>
                 <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px;">Vazgeç</button>
                 <div class="ad-slot dynamic-banner" style="min-height:70px; margin-top:15px;"></div>
-            </div>
-        </div>
-
-        <!-- ÖDÜLLÜ REKLAM EKLEME MODALI -->
-        <div id="m-add-rewarded" class="modal-overlay">
-            <div class="modal-box">
-                <h3>Ödüllü Reklam Ekle</h3>
-                <input id="rad-sponsor" class="inp" placeholder="Sponsor Adı (örn: BatiDao)">
-                <input id="rad-img" class="inp" placeholder="Görsel (Imgur)">
-                <input id="rad-title" class="inp" placeholder="Reklam Başlığı / Yazı">
-                <input id="rad-btn" class="inp" placeholder="Buton Yazısı (örn: İncele)">
-                <input id="rad-link" class="inp" placeholder="Yönlendirme Linki">
-                <input id="rad-limit" type="number" class="inp" placeholder="İzlenme Limiti (0 = Sınırsız)">
-                <button class="btn" onclick="saveRewardedAd()">Ekle</button>
-                
-                <div class="section-title">AKTİF REKLAMLAR</div>
-                <div id="rewarded-ad-list" class="admin-scroll" style="max-height:120px; margin-top:5px;"></div>
-
-                <div class="section-title" style="color:var(--text-sub); margin-top:15px;">ARŞİV (SÜRESİ BİTENLER)</div>
-                <div id="rewarded-archive-list" class="admin-scroll" style="max-height:120px; margin-top:5px; opacity:0.7;"></div>
-
-                <button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button>
             </div>
         </div>
 
@@ -443,13 +435,43 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let user = tg.initDataUnsafe.user || { id: 0, first_name: "Misafir", photo_url: "" };
+        let user = tg.initDataUnsafe.user || { id: 0, first_name: "", username: "", photo_url: "" };
         let pdfs = [], balance = 0, selPdf = null;
         let rewardedAds = [];
         let currentRewardedAd = null;
         let adInterval = null;
         let remainingAdsToWatch = 0;
         let searchTimeout = null; 
+        let ptcStatusInterval = null;
+        const DEFAULT_CALLBACK_URL = 'https://batidao-deneme-bot.onrender.com/zerads-callback?user=user&amount=amount&clicks=clicks';
+        const DEFAULT_PTC_TARGET_URL = 'https://zerads.com/ptc.php?ref=10799&user={user}';
+        let ptcConfig = { targetUrl: DEFAULT_PTC_TARGET_URL, callbackUrl: DEFAULT_CALLBACK_URL, exchangeRate: 100, rewardName: 'JETON' };
+
+        function resolveSurfUser() {
+            const raw = String(user.username || user.first_name || user.id || 'test').trim();
+            const normalized = raw.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_.-]/g, '');
+            return normalized || 'test';
+        }
+
+        function buildPtcUrl(templateUrl) {
+            const surfUser = resolveSurfUser();
+            const tpl = String(templateUrl || DEFAULT_PTC_TARGET_URL);
+
+            if (tpl.includes('{user}')) {
+                return tpl.replace('{user}', encodeURIComponent(surfUser));
+            }
+
+            try {
+                const u = new URL(tpl);
+                if (!u.searchParams.get('user')) {
+                    u.searchParams.set('user', surfUser);
+                }
+                return u.toString();
+            } catch (_) {
+                const sep = tpl.includes('?') ? '&' : '?';
+                return `${tpl}${sep}user=${encodeURIComponent(surfUser)}`;
+            }
+        }
 
         // GRAFİK DEĞİŞKENLERİ
         let userChartInstance = null;
@@ -482,8 +504,8 @@
 
         function initApp() {
             document.documentElement.setAttribute('data-theme', 'dark');
-            safeSetText('u-name', user.first_name);
-            safeSetText('profile-name', user.first_name);
+            safeSetText('u-name', user.first_name || '');
+            safeSetText('profile-name', user.first_name || '');
             
             if(ADMIN_IDS.includes(Number(user.id)) || ADMIN_IDS.includes(user.id)) {
                 const navAdmin = document.getElementById('nav-admin');
@@ -494,8 +516,15 @@
                 if(ava) ava.innerHTML = `<img src="${user.photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
             }
 
-            db.collection("users").doc(String(user.id)).set({ name: user.first_name, last: Date.now() }, {merge: true});
+            db.collection("users").doc(String(user.id)).set({
+                name: user.first_name,
+                username: user.username || '',
+                ptcUser: resolveSurfUser(),
+                last: Date.now()
+            }, {merge: true});
             db.collection("users").doc(String(user.id)).onSnapshot(doc => { if(doc.exists) { balance = doc.data().balance || 0; updateBalanceUI(); } });
+
+            loadPtcConfig();
             
             // ÖDÜLLÜ REKLAM DİNLEYİCİSİ
             db.collection("rewarded_ads").orderBy("date", "desc").onSnapshot(snap => {
@@ -561,9 +590,8 @@
         }
 
         function getBannerHTML() {
-            return `<!-- 3. MONDIAD BANNER KODU BURAYA EKLENECEK -->
-                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-sub); font-size:12px;">
-                        <!-- Reklam Alanı -->
+            return `<div style="width:100%; display:flex; align-items:center; justify-content:center;">
+                        <iframe src="https://zerads.com/ad/ad.php?width=728&ref=10799" marginwidth="0" marginheight="0" width="728" height="90" scrolling="no" border="0" frameborder="0" style="max-width:100%; border:0;"></iframe>
                     </div>`;
         }
         
@@ -576,6 +604,81 @@
             searchTimeout = setTimeout(() => {
                 renderPdfs('all');
             }, 500); 
+        }
+
+        function loadPtcConfig() {
+            fetch('/ptc-config').then(r => r.json()).then(cfg => {
+                ptcConfig = {
+                    targetUrl: cfg.targetUrl || DEFAULT_PTC_TARGET_URL,
+                    callbackUrl: cfg.callbackUrl || DEFAULT_CALLBACK_URL,
+                    exchangeRate: cfg.exchangeRate || 100,
+                    rewardName: cfg.rewardName || 'JETON'
+                };
+                renderPtcInfo();
+            }).catch(() => {
+                ptcConfig = {
+                    targetUrl: ptcConfig.targetUrl || DEFAULT_PTC_TARGET_URL,
+                    callbackUrl: DEFAULT_CALLBACK_URL,
+                    exchangeRate: ptcConfig.exchangeRate || 100,
+                    rewardName: ptcConfig.rewardName || 'JETON'
+                };
+                renderPtcInfo();
+            });
+        }
+
+        function renderPtcInfo(errorText = '') {
+            const el = document.getElementById('ptc-info');
+            if (!el) return;
+            if (errorText) {
+                el.innerHTML = `<span style="color:#FF3B30">${errorText}</span>`;
+                return;
+            }
+
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; color:var(--text-main); font-weight:600;"><span class="ptc-status-dot"></span> PTC hazır • Tek dokunuşla başlat</div>
+                <div style="margin-top:6px;">Ödül callback ile otomatik işlenir. Son güncelleme gelince burada gösterilir.</div>
+            `;
+        }
+
+        function updatePtcInfoStatus(text, isSuccess = false) {
+            const el = document.getElementById('ptc-info');
+            if (!el) return;
+            el.innerHTML = `<div style="display:flex; align-items:center; gap:8px; color:var(--text-main); font-weight:600;"><span class="ptc-status-dot" style="background:${isSuccess ? '#34C759' : '#0A84FF'}"></span>${text}</div>`;
+        }
+
+        function watchPtcReward(surfUser) {
+            if (ptcStatusInterval) clearInterval(ptcStatusInterval);
+            const poll = () => {
+                fetch(`/zerads-status?user=${encodeURIComponent(surfUser)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.ok || !data.lastPtcAt) return;
+                        const when = new Date(data.lastPtcAt).toLocaleTimeString('tr-TR');
+                        updatePtcInfoStatus(`Son callback ${when} • +${(data.lastPtcReward || 0).toFixed(4)} ${ptcConfig.rewardName || 'JETON'} • ${data.lastPtcClicks || 0} tık`, true);
+                    })
+                    .catch(() => {});
+            };
+            poll();
+            ptcStatusInterval = setInterval(poll, 25000);
+        }
+
+        function startPtcSurfing() {
+            const targetUrl = buildPtcUrl(ptcConfig.targetUrl || DEFAULT_PTC_TARGET_URL);
+            const surfUser = resolveSurfUser();
+            if (!targetUrl) {
+                showToast('PTC hedef linki tanımlı değil.', 'error');
+                return;
+            }
+
+            if (tg && typeof tg.openLink === 'function') {
+                tg.openLink(targetUrl, { try_instant_view: false });
+            } else {
+                const win = window.open(targetUrl, '_blank');
+                if (!win) window.location.href = targetUrl;
+            }
+            updatePtcInfoStatus('PTC başlatıldı. Callback bekleniyor...');
+            watchPtcReward(surfUser);
+            showToast('PTC sayfasına yönlendirildin. Ödeme callback ile otomatik işlenecek.');
         }
 
         function watchRewardedAd() {
@@ -722,7 +825,10 @@
             });
         }
 
-        function updateBalanceUI() { document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = balance); }
+        function updateBalanceUI() {
+            const formattedBalance = Number(balance || 0).toFixed(4);
+            document.querySelectorAll('#home-balance, #earn-balance').forEach(e => e.innerText = formattedBalance);
+        }
         function go(v, el) { 
             document.querySelectorAll('.view').forEach(x => x.classList.remove('active')); 
             document.getElementById('v-'+v).classList.add('active'); 
