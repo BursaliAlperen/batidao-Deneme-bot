@@ -69,6 +69,30 @@
             transition: background-color 0.5s var(--ease-smooth), color 0.5s;
         }
 
+        #app-container { position: relative; z-index: 2; }
+
+        .bubble-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(117,181,255,0.28));
+            border: 1px solid rgba(117,181,255,0.25);
+            backdrop-filter: blur(2px);
+            animation: bubbleFloat linear infinite;
+            opacity: 0.65;
+        }
+        @keyframes bubbleFloat {
+            0% { transform: translateY(110vh) scale(0.9); opacity: 0; }
+            10% { opacity: 0.55; }
+            100% { transform: translateY(-20vh) scale(1.08); opacity: 0; }
+        }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--bg-surface); border-radius: 10px; }
 
@@ -163,6 +187,7 @@
             align-items: center; transition: 0.3s; position: relative; opacity: 0; animation: fadeInUp 0.5s forwards;
         }
         .pdf-box:active { transform: scale(0.96); background: var(--bg-surface); }
+        .pdf-box:hover { transform: translateY(-3px); box-shadow: 0 14px 24px rgba(30,107,255,0.15); }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .pdf-cover { width: 100%; aspect-ratio: 1/1.4; object-fit: cover; border-radius: 14px; background: var(--bg-surface); margin-bottom: 10px; }
         .pdf-thumb { width: 100%; aspect-ratio: 1/1.4; border-radius: 14px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-root)); display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--text-sub); margin-bottom: 10px; }
@@ -233,6 +258,16 @@
 
     <div id="toast-container"></div>
 
+    <div class="bubble-bg" aria-hidden="true">
+        <span class="bubble" style="width:80px;height:80px;left:8%;animation-duration:18s;animation-delay:-3s;"></span>
+        <span class="bubble" style="width:36px;height:36px;left:22%;animation-duration:14s;animation-delay:-9s;"></span>
+        <span class="bubble" style="width:62px;height:62px;left:34%;animation-duration:20s;animation-delay:-6s;"></span>
+        <span class="bubble" style="width:28px;height:28px;left:51%;animation-duration:13s;animation-delay:-11s;"></span>
+        <span class="bubble" style="width:72px;height:72px;left:66%;animation-duration:17s;animation-delay:-5s;"></span>
+        <span class="bubble" style="width:42px;height:42px;left:79%;animation-duration:15s;animation-delay:-12s;"></span>
+        <span class="bubble" style="width:24px;height:24px;left:90%;animation-duration:12s;animation-delay:-7s;"></span>
+    </div>
+
     <div id="page-loader">
         <div class="loader-glow"></div>
         <div class="loader-content">
@@ -279,8 +314,8 @@
                 <div class="card" style="background:linear-gradient(130deg,#ffffff 20%, #e8f2ff 95%); border:1px solid rgba(30,107,255,0.18);">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
                         <div>
-                            <h2 style="font-size:26px; font-weight:800; margin-bottom:5px;">Yeni Nesil Kütüphane 📘</h2>
-                            <p style="color:var(--text-sub); font-size:14px;">Beyaz & mavi modern tasarım ile öğrenmeye devam et.</p>
+                            <h2 style="font-size:26px; font-weight:800; margin-bottom:5px;">Yeni Nesil PDF Merkezi 📘</h2>
+                            <p style="color:var(--text-sub); font-size:14px;">Beyaz & mavi arayüz ile PDF arşivine hızlıca ulaş.</p>
                         </div>
                         <div style="font-size:34px; color:var(--primary); animation:float 2.8s ease-in-out infinite;"><i class="fa-solid fa-book-open-reader"></i></div>
                     </div>
@@ -298,7 +333,7 @@
         <!-- 2. LIBRARY -->
         <div id="v-pdfs" class="view">
             <div style="margin-bottom:15px;">
-                <h2 style="font-weight:700; font-size:26px; margin-bottom:10px;" id="lib-title">Kitaplar</h2>
+                <h2 style="font-weight:700; font-size:26px; margin-bottom:10px;" id="lib-title">PDF Arşivi</h2>
                 <div style="position:relative;">
                     <i class="fa-solid fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-sub);"></i>
                     <input class="inp" style="padding-left:45px; margin:0;" placeholder="Ara..." id="search" oninput="delayedSearch()">
@@ -389,7 +424,7 @@
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                     <div class="btn btn-sec" onclick="openModal('m-pdf')"><i class="fa-solid fa-plus"></i> Ekle</div>
-                    <div class="btn btn-sec" onclick="openPdfList()"><i class="fa-solid fa-list"></i> Kitaplar</div>
+                    <div class="btn btn-sec" onclick="openPdfList()"><i class="fa-solid fa-list"></i> PDF'ler</div>
                     <div class="btn btn-sec" onclick="openModal('m-add-rewarded')"><i class="fa-solid fa-video"></i> Ödüllü</div>
                     <div class="btn btn-sec" onclick="openModal('m-users')"><i class="fa-solid fa-users"></i> Üyeler</div>
                     <div class="btn btn-sec" onclick="openModal('m-add-notif')"><i class="fa-solid fa-bullhorn"></i> Duyuru</div>
@@ -434,7 +469,7 @@
             </div>
         </div>
 
-        <div id="m-list-pdfs" class="modal-overlay"><div class="modal-box"><h3>Tüm Kitaplar</h3><div style="position:relative; margin-bottom:10px;"><input class="inp" id="adm-pdf-search" oninput="openPdfList()" placeholder="Kitap Ara..." style="margin:0;"></div><div id="pdf-admin-list" class="admin-scroll" style="max-height:300px;"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
+        <div id="m-list-pdfs" class="modal-overlay"><div class="modal-box"><h3>Tüm PDF'ler</h3><div style="position:relative; margin-bottom:10px;"><input class="inp" id="adm-pdf-search" oninput="openPdfList()" placeholder="PDF Ara..." style="margin:0;"></div><div id="pdf-admin-list" class="admin-scroll" style="max-height:300px;"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-req-user" class="modal-overlay"><div class="modal-box"><h3>İstek</h3><input id="req-txt" class="inp" placeholder="Ad"><div class="ad-slot dynamic-banner"></div><button class="btn" onclick="sendReq()">Gönder</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-pdf" class="modal-overlay"><div class="modal-box"><h3>Ekle</h3><input id="ap-n" class="inp" placeholder="Ad"><input id="ap-l" class="inp" placeholder="Link"><input id="ap-img" class="inp" placeholder="Img"><input id="ap-c" class="inp" placeholder="Kat"><input id="ap-cost" class="inp" value="5" type="number"><button class="btn" onclick="savePdf()">Kaydet</button><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
         <div id="m-users" class="modal-overlay"><div class="modal-box"><h3>Kullanıcılar</h3><div id="adm-user-list" class="admin-scroll"></div><button class="btn btn-sec" onclick="closeM()" style="margin-top:10px">Kapat</button></div></div>
@@ -739,7 +774,7 @@
                 let img = p.img || ''; if(img.includes('imgur') && !img.includes('.jpg')) img += '.jpg';
                 html += `<div class="admin-item"><div style="display:flex;align-items:center;overflow:hidden;">${img ? `<img src="${img}">` : '<i class="fa-solid fa-file-pdf" style="margin-right:10px;"></i>'}<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;font-weight:600;">${p.name}</div></div><button class="btn btn-danger" style="width:32px;height:32px;padding:0;border-radius:8px;" onclick="deletePdf('${p.k}')"><i class="fa-solid fa-trash"></i></button></div>`;
             });
-            listEl.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sub)">Kitap bulunamadı</div>';
+            listEl.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sub)">PDF bulunamadı</div>';
             if(document.getElementById('m-list-pdfs').style.display !== 'flex') openModal('m-list-pdfs');
         }
         function deletePdf(id) { if(confirm("Silinsin mi?")) db.collection("pdfs").doc(id).delete().then(() => { showToast("Silindi"); openPdfList(); }); }
